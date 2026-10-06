@@ -184,7 +184,7 @@ input[type=range]{accent-color:var(--amber);width:120px}
 
 <section class="grid g2b">
   <div class="panel">
-    <h2>Lab network <span class="tag" id="netTag">UniFi, 5 Oct 17:22</span></h2>
+    <h2>Lab network <span class="tag" id="netTag">UniFi, 5 Oct 17:22 · five Microedge PRECISE-LOG PL-TW thermocouple loggers, Modbus TCP</span></h2>
 <pre class="tree" id="tree"></pre>
   </div>
   <div class="panel">
@@ -196,7 +196,7 @@ input[type=range]{accent-color:var(--amber);width:120px}
   </div>
 </section>
 
-<p class="foot"><b>How the simulation works.</b> Weather is real: Open-Meteo at the lab's own coordinates and elevation, 1,204 ft, refreshed every 10 minutes and seven days back, plus the same model at Fairbanks Intl and the live airport observation for the valley reference. Probe readings are not real. Each station takes the fraction of the room-to-outdoor temperature difference that the N50 THERM model dropped at that point on 17 August (<code>−60 F</code> outside, <code>21 C</code> inside), and applies it to the outdoor temperature right now, plus a little sensor noise. The 24 hour history is built the same way from the last day of weather. The window banks are a Blender model. The Vitro Wall is three 44 by 86 inch units under three transoms, scaled off the door in the camera frame. The LuxWall openings are assumed at 36 by 80 inches. Every lite carries an inside and an outside probe. The logger make, channel count, and the rest of the schedule are open questions to Kevin. The glass is always painted from the THERM model, edge coldest, and the all surfaces view extends that to frame and wall, so it is a prediction drawn as a camera frame, not a measurement. The camera panel is an empty slot until the UniFi feed is connected. When Kevin's loggers stream, these panels take the real numbers and the model line stays as the thing to beat.</p>
+<p class="foot"><b>How the simulation works.</b> Weather is real: Open-Meteo at the lab's own coordinates and elevation, 1,204 ft, refreshed every 10 minutes and seven days back, plus the same model at Fairbanks Intl and the live airport observation for the valley reference. Probe readings are not real. Each station takes the fraction of the room-to-outdoor temperature difference that the N50 THERM model dropped at that point on 17 August (<code>−60 F</code> outside, <code>21 C</code> inside), and applies it to the outdoor temperature right now, plus a little sensor noise. The 24 hour history is built the same way from the last day of weather. The window banks are a Blender model. The Vitro Wall is three 44 by 86 inch units under three transoms, scaled off the door in the camera frame. The LuxWall openings are assumed at 36 by 80 inches. Every lite carries an inside and an outside Type T thermocouple. The loggers are Microedge PRECISE-LOG PL-TW, eight channels each, Modbus TCP on the lab network. The logger make, channel count, and the rest of the schedule are open questions to Kevin. The glass is always painted from the THERM model, edge coldest, and the all surfaces view extends that to frame and wall, so it is a prediction drawn as a camera frame, not a measurement. The camera panel is an empty slot until the UniFi feed is connected. When Kevin's loggers stream, these panels take the real numbers and the model line stays as the thing to beat.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -219,24 +219,24 @@ function dewF(tF, rh){ const c=(tF-32)*5/9, a=17.62,b=243.12, g=Math.log(rh/100)
 
 // Probe stations. Assumed from the 2 Oct photographs: pink-tagged probes high and mid-glass on each lite, black probes at the mullion edge.
 const PROBES = [
-  {bank:"A", id:"A1-in",  mesh:"N50_A_P_unit1_in",  lite:"Vitro 1", mm:150, face:"in",  note:"interior, pink tag"},
-  {bank:"A", id:"A1-out", mesh:"N50_A_P_unit1_out", lite:"Vitro 1", mm:150, face:"out", note:"exterior"},
-  {bank:"A", id:"A2-in",  mesh:"N50_A_P_unit2_in",  lite:"Vitro 2", mm:150, face:"in",  note:"interior, pink tag"},
-  {bank:"A", id:"A2-out", mesh:"N50_A_P_unit2_out", lite:"Vitro 2", mm:150, face:"out", note:"exterior"},
-  {bank:"A", id:"A3-in",  mesh:"N50_A_P_unit3_in",  lite:"Vitro 3", mm:150, face:"in",  note:"interior, pink tag"},
-  {bank:"A", id:"A3-out", mesh:"N50_A_P_unit3_out", lite:"Vitro 3", mm:150, face:"out", note:"exterior"},
-  {bank:"A", id:"T1-in",  mesh:"N50_A_P_transom1_in",  lite:"Transom 1", mm:150, face:"in",  note:"interior"},
-  {bank:"A", id:"T1-out", mesh:"N50_A_P_transom1_out", lite:"Transom 1", mm:150, face:"out", note:"exterior"},
-  {bank:"A", id:"T2-in",  mesh:"N50_A_P_transom2_in",  lite:"Transom 2", mm:150, face:"in",  note:"interior"},
-  {bank:"A", id:"T2-out", mesh:"N50_A_P_transom2_out", lite:"Transom 2", mm:150, face:"out", note:"exterior"},
-  {bank:"A", id:"T3-in",  mesh:"N50_A_P_transom3_in",  lite:"Transom 3", mm:150, face:"in",  note:"interior"},
-  {bank:"A", id:"T3-out", mesh:"N50_A_P_transom3_out", lite:"Transom 3", mm:150, face:"out", note:"exterior"},
-  {bank:"B", id:"B1-in",  mesh:"N50_B_P_op1_in",  lite:"Opening 1", mm:150, face:"in",  note:"interior"},
-  {bank:"B", id:"B1-out", mesh:"N50_B_P_op1_out", lite:"Opening 1", mm:150, face:"out", note:"exterior"},
-  {bank:"B", id:"B2-in",  mesh:"N50_B_P_op2_in",  lite:"LuxWall", mm:150, face:"in",  note:"interior"},
-  {bank:"B", id:"B2-out", mesh:"N50_B_P_op2_out", lite:"LuxWall", mm:150, face:"out", note:"exterior"},
-  {bank:"B", id:"B3-in",  mesh:"N50_B_P_op3_in",  lite:"Opening 3", mm:150, face:"in",  note:"interior"},
-  {bank:"B", id:"B3-out", mesh:"N50_B_P_op3_out", lite:"Opening 3", mm:150, face:"out", note:"exterior"},
+  {bank:"A", id:"A1-in",  mesh:"N50_A_P_unit1_in",  lite:"Vitro 1", mm:150, face:"in",  note:"Type T, interior, pink tag"},
+  {bank:"A", id:"A1-out", mesh:"N50_A_P_unit1_out", lite:"Vitro 1", mm:150, face:"out", note:"Type T, exterior"},
+  {bank:"A", id:"A2-in",  mesh:"N50_A_P_unit2_in",  lite:"Vitro 2", mm:150, face:"in",  note:"Type T, interior, pink tag"},
+  {bank:"A", id:"A2-out", mesh:"N50_A_P_unit2_out", lite:"Vitro 2", mm:150, face:"out", note:"Type T, exterior"},
+  {bank:"A", id:"A3-in",  mesh:"N50_A_P_unit3_in",  lite:"Vitro 3", mm:150, face:"in",  note:"Type T, interior, pink tag"},
+  {bank:"A", id:"A3-out", mesh:"N50_A_P_unit3_out", lite:"Vitro 3", mm:150, face:"out", note:"Type T, exterior"},
+  {bank:"A", id:"T1-in",  mesh:"N50_A_P_transom1_in",  lite:"Transom 1", mm:150, face:"in",  note:"Type T, interior"},
+  {bank:"A", id:"T1-out", mesh:"N50_A_P_transom1_out", lite:"Transom 1", mm:150, face:"out", note:"Type T, exterior"},
+  {bank:"A", id:"T2-in",  mesh:"N50_A_P_transom2_in",  lite:"Transom 2", mm:150, face:"in",  note:"Type T, interior"},
+  {bank:"A", id:"T2-out", mesh:"N50_A_P_transom2_out", lite:"Transom 2", mm:150, face:"out", note:"Type T, exterior"},
+  {bank:"A", id:"T3-in",  mesh:"N50_A_P_transom3_in",  lite:"Transom 3", mm:150, face:"in",  note:"Type T, interior"},
+  {bank:"A", id:"T3-out", mesh:"N50_A_P_transom3_out", lite:"Transom 3", mm:150, face:"out", note:"Type T, exterior"},
+  {bank:"B", id:"B1-in",  mesh:"N50_B_P_op1_in",  lite:"Opening 1", mm:150, face:"in",  note:"Type T, interior"},
+  {bank:"B", id:"B1-out", mesh:"N50_B_P_op1_out", lite:"Opening 1", mm:150, face:"out", note:"Type T, exterior"},
+  {bank:"B", id:"B2-in",  mesh:"N50_B_P_op2_in",  lite:"LuxWall", mm:150, face:"in",  note:"Type T, interior"},
+  {bank:"B", id:"B2-out", mesh:"N50_B_P_op2_out", lite:"LuxWall", mm:150, face:"out", note:"Type T, exterior"},
+  {bank:"B", id:"B3-in",  mesh:"N50_B_P_op3_in",  lite:"Opening 3", mm:150, face:"in",  note:"Type T, interior"},
+  {bank:"B", id:"B3-out", mesh:"N50_B_P_op3_out", lite:"Opening 3", mm:150, face:"out", note:"Type T, exterior"},
 ];
 const noise = PROBES.map(()=>({v:0}));
 function tick(dt){ noise.forEach(n=>{ n.v = n.v*0.96 + (Math.random()-0.5)*0.12; }); }
@@ -385,7 +385,7 @@ function renderInv(){
 }
 function renderTree(){
   const j=()=> (Math.random()<0.15? (Math.random()<0.5?-1:1):0);
-  const L=LOG.map(([n,d],i)=>`│   ${i<4?"├──":"└──"} Logger ${n.padEnd(20)} <span class="db">${d+j()} dBm</span> <span class="cm">2.4 GHz</span>`).join("\n");
+  const L=LOG.map(([n,d],i)=>`│   ${i<4?"├──":"└──"} ${n.padEnd(22)} <span class="db">${d+j()} dBm</span> <span class="cm">PL-TW, 8 ch, Type T</span>`).join("\n");
   $("tree").innerHTML=`Starlink
 └── North 50 Lab <span class="cm">(gateway)</span>
     └── N50 Main Switch
