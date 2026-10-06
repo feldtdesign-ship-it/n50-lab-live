@@ -132,10 +132,10 @@ input[type=range]{accent-color:var(--amber);width:120px}
   <div class="panel">
     <h2>Vitro Wall <span class="tag">house · south elevation · camera "Vitro Wall"</span></h2>
     <div class="stagewrap"><canvas id="stageA" class="stage"></canvas><div class="tscale" id="tscaleA" hidden><span class="mx">--</span><i></i><span class="mn">--</span><em>SIMULATED · ε 0.95</em></div>
-      <div class="ov"><b>VITRO WALL</b>3 × Vitro VIG 44 × 86 in, lower row<br>3 × transom 44 × 48 in, assumed<br>scaled off the 36 × 80 door</div></div>
+      <div class="ov"><b>VITRO WALL</b>V1 VIG in · V2 no second layer · V3 VIG out<br>44 × 86 in, transoms 44 × 48 in assumed<br>scaled off the 36 × 80 door</div></div>
   </div>
   <div class="panel">
-    <h2>Vitro Wall probes <span class="tag">12 · two per lite on all six · pending Kevin</span></h2>
+    <h2>Vitro Wall probes <span class="tag">13 · per Kevin, 6 Oct · channels to be confirmed</span></h2>
     <table class="probes" id="probesA"><thead><tr><th>Station</th><th>Lite</th><th style="text-align:right">Inboard</th><th style="text-align:right">Reading</th><th style="text-align:right">vs model</th></tr></thead><tbody></tbody></table>
   </div>
 </section>
@@ -144,12 +144,12 @@ input[type=range]{accent-color:var(--amber);width:120px}
   <div class="panel">
     <h2>LuxWall <span class="tag">lab · camera "LuxWall"</span></h2>
     <div class="stagewrap"><canvas id="stageB" class="stage"></canvas><div class="tscale" id="tscaleB" hidden><span class="mx">--</span><i></i><span class="mn">--</span><em>SIMULATED · ε 0.95</em></div>
-      <div class="ov"><b>LUXWALL</b>3 openings in drywall<br>36 × 80 in, assumed, pending Kevin<br>spare LuxWall unit in opening 2</div></div>
+      <div class="ov"><b>LUXWALL</b>Kevin numbers six lites, L1 to L6<br>model shows three openings, 36 × 80 in assumed<br>layout to confirm</div></div>
   </div>
   <div class="panel">
-    <h2>LuxWall probes <span class="tag">6 · two per lite · pending Kevin</span></h2>
+    <h2>LuxWall probes <span class="tag">13 on three openings · Kevin numbers six lites, L1 to L6 · layout to confirm</span></h2>
     <table class="probes" id="probesB"><thead><tr><th>Station</th><th>Lite</th><th style="text-align:right">Inboard</th><th style="text-align:right">Reading</th><th style="text-align:right">vs model</th></tr></thead><tbody></tbody></table>
-    <p class="delta" style="margin:10px 0 0">Two probes per lite, inside and outside, as Michael described. Kevin's schedule replaces all of this.</p>
+    <p class="delta" style="margin:10px 0 0">Per Kevin, 6 October: centre of glass inside and out, edge of glass inside, on every lite, plus two interior and two exterior air thermocouples per wall. Loggers sample every 15 minutes. Channel by channel placement still to be confirmed.</p>
   </div>
 </section>
 
@@ -207,7 +207,7 @@ input[type=range]{accent-color:var(--amber);width:120px}
   </div>
 </section>
 
-<p class="foot"><b>How the simulation works.</b> Weather is real: Open-Meteo at the lab's own coordinates and elevation, 1,204 ft, refreshed every 10 minutes and seven days back, plus the same model at Fairbanks Intl and the live airport observation for the valley reference. Probe readings are not real. Each station takes the fraction of the room-to-outdoor temperature difference that the N50 THERM model dropped at that point on 17 August (<code>−60 F</code> outside, <code>21 C</code> inside), and applies it to the outdoor temperature right now, plus a little sensor noise. The 24 hour history is built the same way from the last day of weather. The window banks are a Blender model. The Vitro Wall is three 44 by 86 inch units under three transoms, scaled off the door in the camera frame. The LuxWall openings are assumed at 36 by 80 inches. Every lite carries an inside and an outside Type T thermocouple. The loggers are Microedge PRECISE-LOG PL-TW, eight channels each, Modbus TCP on the lab network. The logger make, channel count, and the rest of the schedule are open questions to Kevin. The glass is always painted from the THERM model, edge coldest, and the all surfaces view extends that to frame and wall, so it is a prediction drawn as a camera frame, not a measurement. The camera panel is an empty slot until the UniFi feed is connected. When Kevin's loggers stream, these panels take the real numbers and the model line stays as the thing to beat.</p>
+<p class="foot"><b>How the simulation works.</b> Weather is real: Open-Meteo at the lab's own coordinates and elevation, 1,204 ft, refreshed every 10 minutes and seven days back, plus the same model at Fairbanks Intl and the live airport observation for the valley reference. Probe readings are not real. Each station takes the fraction of the room-to-outdoor temperature difference that the N50 THERM model dropped at that point on 17 August (<code>−60 F</code> outside, <code>21 C</code> inside), and applies it to the outdoor temperature right now, plus a little sensor noise. The 24 hour history is built the same way from the last day of weather. The window banks are a Blender model. The Vitro Wall is three 44 by 86 inch units under three transoms, scaled off the door in the camera frame. The LuxWall openings are assumed at 36 by 80 inches. Every lite carries three Type T thermocouples, centre inside, centre outside, edge inside, and each wall has two interior and two exterior air thermocouples. The loggers are Microedge PRECISE-LOG PL-TW, eight channels each, Modbus TCP on the lab network. The logger make, channel count, and the rest of the schedule are open questions to Kevin. The glass is always painted from the THERM model, edge coldest, and the all surfaces view extends that to frame and wall, so it is a prediction drawn as a camera frame, not a measurement. The camera panel is an empty slot until the UniFi feed is connected. When Kevin's loggers stream, these panels take the real numbers and the model line stays as the thing to beat.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -230,30 +230,38 @@ function dewF(tF, rh){ const c=(tF-32)*5/9, a=17.62,b=243.12, g=Math.log(rh/100)
 
 // Probe stations. Assumed from the 2 Oct photographs: pink-tagged probes high and mid-glass on each lite, black probes at the mullion edge.
 const PROBES = [
-  {bank:"A", id:"A1-in",  mesh:"N50_A_P_unit1_in",  lite:"Vitro 1", mm:150, face:"in",  note:"Type T, interior, pink tag"},
-  {bank:"A", id:"A1-out", mesh:"N50_A_P_unit1_out", lite:"Vitro 1", mm:150, face:"out", note:"Type T, exterior"},
-  {bank:"A", id:"A2-in",  mesh:"N50_A_P_unit2_in",  lite:"Vitro 2", mm:150, face:"in",  note:"Type T, interior, pink tag"},
-  {bank:"A", id:"A2-out", mesh:"N50_A_P_unit2_out", lite:"Vitro 2", mm:150, face:"out", note:"Type T, exterior"},
-  {bank:"A", id:"A3-in",  mesh:"N50_A_P_unit3_in",  lite:"Vitro 3", mm:150, face:"in",  note:"Type T, interior, pink tag"},
-  {bank:"A", id:"A3-out", mesh:"N50_A_P_unit3_out", lite:"Vitro 3", mm:150, face:"out", note:"Type T, exterior"},
-  {bank:"A", id:"T1-in",  mesh:"N50_A_P_transom1_in",  lite:"Transom 1", mm:150, face:"in",  note:"Type T, interior"},
-  {bank:"A", id:"T1-out", mesh:"N50_A_P_transom1_out", lite:"Transom 1", mm:150, face:"out", note:"Type T, exterior"},
-  {bank:"A", id:"T2-in",  mesh:"N50_A_P_transom2_in",  lite:"Transom 2", mm:150, face:"in",  note:"Type T, interior"},
-  {bank:"A", id:"T2-out", mesh:"N50_A_P_transom2_out", lite:"Transom 2", mm:150, face:"out", note:"Type T, exterior"},
-  {bank:"A", id:"T3-in",  mesh:"N50_A_P_transom3_in",  lite:"Transom 3", mm:150, face:"in",  note:"Type T, interior"},
-  {bank:"A", id:"T3-out", mesh:"N50_A_P_transom3_out", lite:"Transom 3", mm:150, face:"out", note:"Type T, exterior"},
-  {bank:"B", id:"B1-in",  mesh:"N50_B_P_op1_in",  lite:"Opening 1", mm:150, face:"in",  note:"Type T, interior"},
-  {bank:"B", id:"B1-out", mesh:"N50_B_P_op1_out", lite:"Opening 1", mm:150, face:"out", note:"Type T, exterior"},
-  {bank:"B", id:"B2-in",  mesh:"N50_B_P_op2_in",  lite:"LuxWall", mm:150, face:"in",  note:"Type T, interior"},
-  {bank:"B", id:"B2-out", mesh:"N50_B_P_op2_out", lite:"LuxWall", mm:150, face:"out", note:"Type T, exterior"},
-  {bank:"B", id:"B3-in",  mesh:"N50_B_P_op3_in",  lite:"Opening 3", mm:150, face:"in",  note:"Type T, interior"},
-  {bank:"B", id:"B3-out", mesh:"N50_B_P_op3_out", lite:"Opening 3", mm:150, face:"out", note:"Type T, exterior"},
+  {bank:"A", id:"V1 ci", mesh:"N50_A_P_V1_ci", lite:"V1 · VIG in", mm:150, face:"in", note:"centre of glass, interior", kind:"glass"},
+  {bank:"A", id:"V1 ce", mesh:"N50_A_P_V1_ce", lite:"V1 · VIG in", mm:150, face:"out", note:"centre of glass, exterior", kind:"glass"},
+  {bank:"A", id:"V1 ei", mesh:"N50_A_P_V1_ei", lite:"V1 · VIG in", mm:35, face:"in", note:"edge of glass, interior", kind:"glass"},
+  {bank:"A", id:"V2 ci", mesh:"N50_A_P_V2_ci", lite:"V2 · no second layer", mm:150, face:"in", note:"centre of glass, interior", kind:"glass"},
+  {bank:"A", id:"V2 ce", mesh:"N50_A_P_V2_ce", lite:"V2 · no second layer", mm:150, face:"out", note:"centre of glass, exterior", kind:"glass"},
+  {bank:"A", id:"V2 ei", mesh:"N50_A_P_V2_ei", lite:"V2 · no second layer", mm:35, face:"in", note:"edge of glass, interior", kind:"glass"},
+  {bank:"A", id:"V3 ci", mesh:"N50_A_P_V3_ci", lite:"V3 · VIG out", mm:150, face:"in", note:"centre of glass, interior", kind:"glass"},
+  {bank:"A", id:"V3 ce", mesh:"N50_A_P_V3_ce", lite:"V3 · VIG out", mm:150, face:"out", note:"centre of glass, exterior", kind:"glass"},
+  {bank:"A", id:"V3 ei", mesh:"N50_A_P_V3_ei", lite:"V3 · VIG out", mm:35, face:"in", note:"edge of glass, interior", kind:"glass"},
+  {bank:"A", id:"air in 1", mesh:"N50_A_P_air_in1", lite:"room", mm:0, face:"in", note:"interior ambient air", kind:"air"},
+  {bank:"A", id:"air out 1", mesh:"N50_A_P_air_out1", lite:"outside", mm:0, face:"out", note:"exterior ambient air", kind:"air"},
+  {bank:"A", id:"air in 2", mesh:"N50_A_P_air_in2", lite:"room", mm:0, face:"in", note:"interior ambient air", kind:"air"},
+  {bank:"A", id:"air out 2", mesh:"N50_A_P_air_out2", lite:"outside", mm:0, face:"out", note:"exterior ambient air", kind:"air"},
+  {bank:"B", id:"L1 ci", mesh:"N50_B_P_L1_ci", lite:"L1", mm:150, face:"in", note:"centre of glass, interior", kind:"glass"},
+  {bank:"B", id:"L1 ce", mesh:"N50_B_P_L1_ce", lite:"L1", mm:150, face:"out", note:"centre of glass, exterior", kind:"glass"},
+  {bank:"B", id:"L1 ei", mesh:"N50_B_P_L1_ei", lite:"L1", mm:35, face:"in", note:"edge of glass, interior", kind:"glass"},
+  {bank:"B", id:"L2 ci", mesh:"N50_B_P_L2_ci", lite:"L2", mm:150, face:"in", note:"centre of glass, interior", kind:"glass"},
+  {bank:"B", id:"L2 ce", mesh:"N50_B_P_L2_ce", lite:"L2", mm:150, face:"out", note:"centre of glass, exterior", kind:"glass"},
+  {bank:"B", id:"L2 ei", mesh:"N50_B_P_L2_ei", lite:"L2", mm:35, face:"in", note:"edge of glass, interior", kind:"glass"},
+  {bank:"B", id:"L3 ci", mesh:"N50_B_P_L3_ci", lite:"L3", mm:150, face:"in", note:"centre of glass, interior", kind:"glass"},
+  {bank:"B", id:"L3 ce", mesh:"N50_B_P_L3_ce", lite:"L3", mm:150, face:"out", note:"centre of glass, exterior", kind:"glass"},
+  {bank:"B", id:"L3 ei", mesh:"N50_B_P_L3_ei", lite:"L3", mm:35, face:"in", note:"edge of glass, interior", kind:"glass"},
+  {bank:"B", id:"air in 1", mesh:"N50_B_P_air_in1", lite:"room", mm:0, face:"in", note:"interior ambient air", kind:"air"},
+  {bank:"B", id:"air out 1", mesh:"N50_B_P_air_out1", lite:"outside", mm:0, face:"out", note:"exterior ambient air", kind:"air"},
+  {bank:"B", id:"air in 2", mesh:"N50_B_P_air_in2", lite:"room", mm:0, face:"in", note:"interior ambient air", kind:"air"},
+  {bank:"B", id:"air out 2", mesh:"N50_B_P_air_out2", lite:"outside", mm:0, face:"out", note:"exterior ambient air", kind:"air"},
 ];
 const noise = PROBES.map(()=>({v:0}));
 function tick(dt){ noise.forEach(n=>{ n.v = n.v*0.96 + (Math.random()-0.5)*0.12; }); }
 function readings(tin,tout){
-  return PROBES.map((p,i)=> ({...p, t: (p.face==="out" ? extSurf(tin,tout,p.mm) : surf(p.mm,tin,tout)) + noise[i].v,
-                               model: p.face==="out" ? extSurf(tin,tout,p.mm) : surf(p.mm,tin,tout)}));
+  return PROBES.map((p,i)=> ({...p, t: (p.kind==="air" ? (p.face==="out"?tout:tin) : p.face==="out" ? extSurf(tin,tout,p.mm) : surf(p.mm,tin,tout)) + noise[i].v,
+                               model: p.kind==="air" ? (p.face==="out"?tout:tin) : p.face==="out" ? extSurf(tin,tout,p.mm) : surf(p.mm,tin,tout)}));
 }
 
 // ---------- state ----------
@@ -324,7 +332,7 @@ function colorFor(t,tin,tout){ // cold -> ember
 function renderTable(rs){ ["A","B"].forEach(b=>{
   const tb=$("probes"+b).querySelector("tbody"); tb.innerHTML="";
   rs.filter(r=>r.bank===b).forEach(r=>{ const d=r.t-r.model; const tr=document.createElement("tr");
-    tr.innerHTML=`<td><span class="st" style="background:${r.face==="out"?"#9FD9E8":colorFor(r.t,state.tin,state.tout)}"></span>${r.id}<div class="delta">${r.note}</div></td><td>${r.lite}</td><td class="num">${r.face==="out"?"ext":r.mm+" mm"}</td><td class="num" style="color:var(--cream)">${r.t.toFixed(1)} F</td><td class="num"><span class="delta">${d>=0?"+":""}${d.toFixed(2)}</span></td>`;
+    tr.innerHTML=`<td><span class="st" style="background:${r.face==="out"?"#9FD9E8":colorFor(r.t,state.tin,state.tout)}"></span>${r.id}<div class="delta">${r.note}</div></td><td>${r.lite}</td><td class="num">${r.kind==="air"?"air":r.face==="out"?"ext":r.mm+" mm"}</td><td class="num" style="color:var(--cream)">${r.t.toFixed(1)} F</td><td class="num"><span class="delta">${d>=0?"+":""}${d.toFixed(2)}</span></td>`;
     tb.appendChild(tr); }); });
 }
 
@@ -345,7 +353,7 @@ function renderTrace(rs){
   let d=""; for(let mm=0; mm<=150; mm+=1){ d+=(mm?"L":"M")+mmX(mm).toFixed(1)+" "+Y(surf(mm,tin,tout)).toFixed(1)+" "; }
   s+=`<path d="${d}" fill="none" stroke="#9DB0C6" stroke-width="1.6"/>`;
   // probes
-  rs.filter(r=>r.face==="in").forEach(r=>{ s+= r.bank==="A" ? `<circle cx="${mmX(r.mm)}" cy="${Y(r.t)}" r="4.5" fill="#EBB540" stroke="#06101B" stroke-width="1.5"/>` : `<rect x="${mmX(r.mm)-4}" y="${Y(r.t)-4}" width="8" height="8" fill="#F5F2EA" stroke="#06101B" stroke-width="1.5"/>`; });
+  rs.filter(r=>r.face==="in"&&r.kind!=="air").forEach(r=>{ s+= r.bank==="A" ? `<circle cx="${mmX(r.mm)}" cy="${Y(r.t)}" r="4.5" fill="#EBB540" stroke="#06101B" stroke-width="1.5"/>` : `<rect x="${mmX(r.mm)-4}" y="${Y(r.t)-4}" width="8" height="8" fill="#F5F2EA" stroke="#06101B" stroke-width="1.5"/>`; });
   s+=`<text x="${L+4}" y="${T+10}" fill="#F5F2EA">room ${tin} F · outside ${tout.toFixed(0)} F</text>`;
   svg.innerHTML=s;
 }
