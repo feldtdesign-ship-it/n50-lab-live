@@ -446,8 +446,17 @@ function applyThermal(){
     $("tscale"+b).hidden=false; $("tscale"+b).querySelector(".mx").textContent=hi.toFixed(1); $("tscale"+b).querySelector(".mn").textContent=lo.toFixed(1);
     v.scene.traverse(o=>{ if(!o.isMesh) return; const k=(o.name||(o.parent&&o.parent.name)||"").replace(/\.\d+$/,"");
       if(!state.thermal){ if(v.orig.has(o)) o.material=v.orig.get(o); return; }
-      let t; if(/_P_/.test(k)) t=null; else if(/_(mull|head|sill|transom_bar|jamb)/.test(k)) t=surf(6,state.tin,state.tout)-1.5; else if(/_(wall|pier|cladding|plywood)/.test(k)) t=state.tin-1.2; else t=surf(150,state.tin,state.tout);
-      if(t===null) return; if(!o.userData.tm) o.userData.tm=new THREE.MeshBasicMaterial(); o.userData.tm.color.setRGB(...iron(n(t))); o.material=o.userData.tm; });
+      if(/_P_/.test(k)) return;
+      // walls and frames: grade from the outdoor face to the room face through the thickness, so reveals show the gradient
+      const isFrame=/_(mull|head|sill|transom_bar|jamb)/.test(k);
+      const tIn = isFrame ? surf(6,state.tin,state.tout)-1.5 : state.tin-1.2;
+      const tOut = state.tout + (isFrame?0.06:0.03)*(state.tin-state.tout);
+      const g=o.geometry; if(!g.attributes.color){ g.setAttribute("color", new THREE.BufferAttribute(new Float32Array(g.attributes.position.count*3),3)); }
+      g.computeBoundingBox(); const bb=g.boundingBox; const pos=g.attributes.position, col=g.attributes.color;
+      // local z runs outdoor (min) to room (max) for every box in this model
+      for(let i=0;i<pos.count;i++){ const u=(pos.getZ(i)-bb.min.z)/((bb.max.z-bb.min.z)||1); const t=tOut+(tIn-tOut)*u; const c=iron(n(t)); col.setXYZ(i,c[0],c[1],c[2]); }
+      col.needsUpdate=true;
+      if(!o.userData.tm) o.userData.tm=new THREE.MeshBasicMaterial({vertexColors:true}); o.material=o.userData.tm; });
     v.glass.forEach(m=>{ m.visible=true; const pos=m.geometry.attributes.position, col=m.geometry.attributes.color, w=m.userData.w, h=m.userData.h;
       for(let i=0;i<pos.count;i++){ const x=pos.getX(i), y=pos.getY(i); const mm=Math.max(0,Math.min(w/2-Math.abs(x), h/2-Math.abs(y))*1000); const t=m.userData.face==="out" ? extSurf(state.tin,state.tout,mm) : surf(mm,state.tin,state.tout); const c=iron(n(t)); col.setXYZ(i,c[0],c[1],c[2]); } col.needsUpdate=true; });
   });
