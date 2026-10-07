@@ -8,7 +8,7 @@ A simulated sensor dashboard for the North 50 Building Systems window lab in Fai
 
 - **Weather is real.** Open-Meteo at the lab's own coordinates and elevation, 1,204 ft, refreshed every 10 minutes and seven days back, plus the same model at Fairbanks International and the live airport observation from the National Weather Service for the valley reference.
 - **Probe readings are simulated.** Each station takes the fraction of the room-to-outdoor temperature difference that the N50 THERM model dropped at that point, and applies it to the outdoor temperature right now. When the lab's loggers stream, these panels take the real numbers and the model line stays as the thing to beat.
-- **The window walls are a Blender model.** The Vitro Wall is three 44 by 86 inch vacuum insulated glass units under three transoms. The LuxWall openings are assumed at 36 by 80 inches. Every lite carries an inside and an outside probe.
+- **The window walls are a Blender model.** The Vitro Wall is three 44 by 86 inch vacuum insulated glass units under three transoms. The LuxWall openings are assumed at 36 by 80 inches. Every lite carries three Type T thermocouples, centre inside, centre outside, edge inside, and each wall has two interior and two exterior air thermocouples. The loggers are Microedge PRECISE-LOG PL-TW, sampling every 15 minutes.
 - **The inversion tracker** compares the lab on the slope against the valley floor. Fourteen real stations, October through March, say the slope runs 10 to 20 F warmer than Fairbanks International on inversion nights. The models apply a lapse rate and show the opposite, which is why the lab needs its own weather station.
 
 ## Going live
