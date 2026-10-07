@@ -11,6 +11,10 @@ A simulated sensor dashboard for the North 50 Building Systems window lab in Fai
 - **The window walls are a Blender model.** The Vitro Wall is three 44 by 86 inch vacuum insulated glass units under three transoms. The LuxWall openings are assumed at 36 by 80 inches. Every lite carries an inside and an outside probe.
 - **The inversion tracker** compares the lab on the slope against the valley floor. Fourteen real stations, October through March, say the slope runs 10 to 20 F warmer than Fairbanks International on inversion nights. The models apply a lapse rate and show the opposite, which is why the lab needs its own weather station.
 
+## Going live
+
+`bridge/` holds the script that runs on the lab computer, reads the loggers over Modbus and the Davis WeatherLink Live on the LAN, and pushes `data/latest.json` here every 15 minutes. The page reads that file and switches from simulation to live on its own. See `bridge/README.md`.
+
 ## Files
 
 - `index.html` is the whole page, self-contained. Open it locally or serve it anywhere.

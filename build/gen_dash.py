@@ -99,7 +99,7 @@ input[type=range]{accent-color:var(--amber);width:120px}
   <img src="__MARK__" alt="N50">
   <div class="hd-title"><b>North 50 Lab</b> &nbsp;·&nbsp; Fairbanks, Alaska &nbsp;·&nbsp; 64.86 N</div>
   <span class="pill live" id="pillWx">LIVE WEATHER</span>
-  <span class="pill sim">SIMULATED SENSORS</span>
+  <span class="pill sim" id="pillSim">SIMULATED SENSORS</span>
   <div class="clock" id="clock">--:--:-- AKDT</div>
 </header>
 
@@ -207,7 +207,7 @@ input[type=range]{accent-color:var(--amber);width:120px}
   </div>
 </section>
 
-<p class="foot"><b>How the simulation works.</b> Weather is real: Open-Meteo at the lab's own coordinates and elevation, 1,204 ft, refreshed every 10 minutes and seven days back, plus the same model at Fairbanks Intl and the live airport observation for the valley reference. Probe readings are not real. Each station takes the fraction of the room-to-outdoor temperature difference that the N50 THERM model dropped at that point on 17 August (<code>−60 F</code> outside, <code>21 C</code> inside), and applies it to the outdoor temperature right now, plus a little sensor noise. The 24 hour history is built the same way from the last day of weather. The window banks are a Blender model. The Vitro Wall is three 44 by 86 inch units under three transoms, scaled off the door in the camera frame. The LuxWall openings are assumed at 36 by 80 inches. Every lite carries three Type T thermocouples, centre inside, centre outside, edge inside, and each wall has two interior and two exterior air thermocouples. The loggers are Microedge PRECISE-LOG PL-TW, eight channels each, Modbus TCP on the lab network. The logger make, channel count, and the rest of the schedule are open questions to Kevin. The glass is always painted from the THERM model, edge coldest, and the all surfaces view extends that to frame and wall, so it is a prediction drawn as a camera frame, not a measurement. The camera panel is an empty slot until the UniFi feed is connected. When Kevin's loggers stream, these panels take the real numbers and the model line stays as the thing to beat.</p>
+<p class="foot"><b>How the simulation works.</b> Weather is real: Open-Meteo at the lab's own coordinates and elevation, 1,204 ft, refreshed every 10 minutes and seven days back, plus the same model at Fairbanks Intl and the live airport observation for the valley reference. Probe readings are simulated until the lab bridge writes data/latest.json, then the table shows the live value with a green mark and the model line stays for comparison. Each station takes the fraction of the room-to-outdoor temperature difference that the N50 THERM model dropped at that point on 17 August (<code>−60 F</code> outside, <code>21 C</code> inside), and applies it to the outdoor temperature right now, plus a little sensor noise. The 24 hour history is built the same way from the last day of weather. The window banks are a Blender model. The Vitro Wall is three 44 by 86 inch units under three transoms, scaled off the door in the camera frame. The LuxWall openings are assumed at 36 by 80 inches. Every lite carries three Type T thermocouples, centre inside, centre outside, edge inside, and each wall has two interior and two exterior air thermocouples. The loggers are Microedge PRECISE-LOG PL-TW, eight channels each, Modbus TCP on the lab network. The logger make, channel count, and the rest of the schedule are open questions to Kevin. The glass is always painted from the THERM model, edge coldest, and the all surfaces view extends that to frame and wall, so it is a prediction drawn as a camera frame, not a measurement. The camera panel is an empty slot until the UniFi feed is connected. When Kevin's loggers stream, these panels take the real numbers and the model line stays as the thing to beat.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -259,9 +259,20 @@ const PROBES = [
 ];
 const noise = PROBES.map(()=>({v:0}));
 function tick(dt){ noise.forEach(n=>{ n.v = n.v*0.96 + (Math.random()-0.5)*0.12; }); }
+let LIVE=null;  // {time_utc, probes:{id:{value_f,...}}, weather:{...}} from bridge/poll_lab.py
+async function fetchLive(){
+  try{ const r=await fetch("data/latest.json",{cache:"no-store"}); if(!r.ok) throw 0; const j=await r.json();
+    const age=(Date.now()-new Date(j.time_utc))/60000; LIVE = age<90 ? j : null;
+    const el=$("pillSim"); if(LIVE){ el.textContent="LIVE SENSORS "+j.time_utc.slice(11,16)+" UTC"; el.classList.remove("sim"); el.classList.add("live"); }
+    else { el.textContent="SIMULATED SENSORS · last data "+Math.round(age/60)+" h old"; }
+    if(LIVE&&LIVE.weather&&LIVE.weather.temp_f!=null){ $("wTs").textContent="Davis station on the lab roof"; if(state.live){ state.tout=LIVE.weather.temp_f; $("tout").value=Math.round(state.tout); } }
+    update();
+  }catch(e){ LIVE=null; }
+}
 function readings(tin,tout){
   return PROBES.map((p,i)=> ({...p, t: (p.kind==="air" ? (p.face==="out"?tout:tin) : p.face==="out" ? extSurf(tin,tout,p.mm) : surf(p.mm,tin,tout)) + noise[i].v,
-                               model: p.kind==="air" ? (p.face==="out"?tout:tin) : p.face==="out" ? extSurf(tin,tout,p.mm) : surf(p.mm,tin,tout)}));
+                               model: p.kind==="air" ? (p.face==="out"?tout:tin) : p.face==="out" ? extSurf(tin,tout,p.mm) : surf(p.mm,tin,tout)}))
+    .map(r=>{ const lv=LIVE&&LIVE.probes&&LIVE.probes[r.id]; return (lv&&lv.value_f!=null) ? {...r, t:lv.value_f, live:true} : r; });
 }
 
 // ---------- state ----------
@@ -332,7 +343,7 @@ function colorFor(t,tin,tout){ // cold -> ember
 function renderTable(rs){ ["A","B"].forEach(b=>{
   const tb=$("probes"+b).querySelector("tbody"); tb.innerHTML="";
   rs.filter(r=>r.bank===b).forEach(r=>{ const d=r.t-r.model; const tr=document.createElement("tr");
-    tr.innerHTML=`<td><span class="st" style="background:${r.face==="out"?"#9FD9E8":colorFor(r.t,state.tin,state.tout)}"></span>${r.id}<div class="delta">${r.note}</div></td><td>${r.lite}</td><td class="num">${r.kind==="air"?"air":r.face==="out"?"ext":r.mm+" mm"}</td><td class="num" style="color:var(--cream)">${r.t.toFixed(1)} F</td><td class="num"><span class="delta">${d>=0?"+":""}${d.toFixed(2)}</span></td>`;
+    tr.innerHTML=`<td><span class="st" style="background:${r.face==="out"?"#9FD9E8":colorFor(r.t,state.tin,state.tout)}"></span>${r.id}<div class="delta">${r.note}</div></td><td>${r.lite}</td><td class="num">${r.kind==="air"?"air":r.face==="out"?"ext":r.mm+" mm"}</td><td class="num" style="color:var(--cream)">${r.t.toFixed(1)} F${r.live?" <span class=\"delta\" style=\"color:var(--ok)\">live</span>":""}</td><td class="num"><span class="delta">${d>=0?"+":""}${d.toFixed(2)}</span></td>`;
     tb.appendChild(tr); }); });
 }
 
@@ -495,6 +506,7 @@ setInterval(clock,1000); clock();
 renderTree(); setInterval(renderTree,4000);
 initThree(); update(); setInterval(update,2000);
 fetchWx(); setInterval(fetchWx,600000);
+fetchLive(); setInterval(fetchLive,300000);
 </script>
 """
 HTML = HTML.replace("__SAMPLE__", open(f"{S}/wx_sample_min.json").read()).replace("__MARK__", MARK).replace("__CAMH__", CAM_H).replace("__CAML__", CAM_L).replace("__GLB__", GLB).replace("__IR1__", IR1).replace("__IR2__", IR2)

@@ -1,0 +1,29 @@
+{
+  "site": "North 50 Lab",
+  "push": false,
+  "scale_c": 0.1,
+  "offset_c": 0.0,
+  "weatherlink_ip": "192.168.1.50",
+  "loggers": [
+    {"name": "Vitro-1", "ip": "192.168.1.101", "port": 502, "unit": 1},
+    {"name": "Vitro-2", "ip": "192.168.1.102", "port": 502, "unit": 1},
+    {"name": "Lux-1",   "ip": "192.168.1.103", "port": 502, "unit": 1},
+    {"name": "Lux-2",   "ip": "192.168.1.104", "port": 502, "unit": 1},
+    {"name": "Lux-3",   "ip": "192.168.1.105", "port": 502, "unit": 1}
+  ],
+  "channels": {
+    "Vitro-1.ch1": {"id": "V1 ci", "wall": "A", "lite": "V1", "face": "in",  "station": "centre"},
+    "Vitro-1.ch2": {"id": "V1 ce", "wall": "A", "lite": "V1", "face": "out", "station": "centre"},
+    "Vitro-1.ch3": {"id": "V1 ei", "wall": "A", "lite": "V1", "face": "in",  "station": "edge"},
+    "Vitro-1.ch4": {"id": "V2 ci", "wall": "A", "lite": "V2", "face": "in",  "station": "centre"},
+    "Vitro-1.ch5": {"id": "V2 ce", "wall": "A", "lite": "V2", "face": "out", "station": "centre"},
+    "Vitro-1.ch6": {"id": "V2 ei", "wall": "A", "lite": "V2", "face": "in",  "station": "edge"},
+    "Vitro-1.ch7": {"id": "V3 ci", "wall": "A", "lite": "V3", "face": "in",  "station": "centre"},
+    "Vitro-1.ch8": {"id": "V3 ce", "wall": "A", "lite": "V3", "face": "out", "station": "centre"},
+    "Vitro-2.ch1": {"id": "V3 ei", "wall": "A", "lite": "V3", "face": "in",  "station": "edge"},
+    "Vitro-2.ch2": {"id": "air in 1",  "wall": "A", "lite": "room",    "face": "in",  "station": "air"},
+    "Vitro-2.ch3": {"id": "air in 2",  "wall": "A", "lite": "room",    "face": "in",  "station": "air"},
+    "Vitro-2.ch4": {"id": "air out 1", "wall": "A", "lite": "outside", "face": "out", "station": "air"},
+    "Vitro-2.ch5": {"id": "air out 2", "wall": "A", "lite": "outside", "face": "out", "station": "air"}
+  }
+}
