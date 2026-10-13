@@ -3,29 +3,38 @@
 N50 Lab bridge. Runs on the always-on lab PC, on the same network as the loggers.
 
 Every run it:
-  1. reads each PRECISE-LOG PL-TW over Modbus TCP (input registers, live channel values),
-  2. reads the Davis WeatherLink Live local API if one is present,
-  3. writes data/latest.json and appends to data/log.csv,
-  4. optionally commits and pushes to the n50-lab-live repo so the public page updates.
+  1. pulls this repo, so channel names and scale set from New York (bridge/lab.json) take effect,
+  2. reads each PRECISE-LOG PL-TW over Modbus TCP (input registers, live channel values),
+  3. reads the Davis WeatherLink Live local API if one is set,
+  4. writes data/latest.json and appends to data/log.csv,
+  5. commits and pushes data/ so the public page updates.
 
 Nothing at the lab is opened to the internet. The PC only sends out.
 
 Usage:
   python bridge/poll_lab.py          normal run (what Task Scheduler calls every 15 minutes)
-  python bridge/poll_lab.py --raw    print the raw register numbers from every logger and stop.
-                                     Use this once to check the scale against SiteView.
+  python bridge/poll_lab.py --find   scan the lab network for loggers and write bridge/config.json
+  python bridge/poll_lab.py --raw    print every logger's readings for the SiteView check, and stop
+  python bridge/poll_lab.py --push-on  switch on uploading in config.json
 
-Config lives in bridge/config.json. Every run also appends to bridge/bridge.log.
+Settings:
+  bridge/lab.json     shared, in the repo: scale, channel names, weather station. Edited from New York.
+  bridge/config.json  this PC only, written by --find: logger addresses and whether to push.
+Every run also appends to bridge/bridge.log.
 
 Requires: pip install pymodbus requests
+Normal setup on Windows is bridge/setup.ps1, which does all of this.
 """
-import json, csv, os, sys, subprocess, inspect
+import json, csv, os, sys, socket, subprocess, inspect, shutil
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 DATA = os.path.join(ROOT, "data")
 LOG = os.path.join(HERE, "bridge.log")
+LOCAL = os.path.join(HERE, "config.json")
+CFG = {}
 
 def log(*parts):
     """Print and append to bridge/bridge.log, so scheduled runs with no window still leave a trail."""
@@ -36,54 +45,54 @@ def log(*parts):
     except OSError:
         pass
 
-def load_config():
-    path = os.path.join(HERE, "config.json")
-    if not os.path.exists(path):
-        log("No bridge/config.json. Copy config.example.json to config.json and fill in the logger IPs.")
-        sys.exit(1)
-    with open(path, encoding="utf-8") as f:
-        return json.load(f)
+def read_json(path):
+    if not os.path.exists(path): return {}
+    with open(path, encoding="utf-8") as f: return json.load(f)
 
-CFG = load_config()
+def load_config():
+    """Shared lab.json first, then this PC's config.json on top."""
+    CFG.clear()
+    CFG.update(read_json(os.path.join(HERE, "lab.json")))
+    CFG.update(read_json(LOCAL))
+    CFG.setdefault("loggers", [])
 
 def c_to_f(c): return None if c is None else round(c * 9 / 5 + 32, 2)
 
-def read_registers(box):
+def read_registers(box, quiet=False):
     """Return the nine raw input registers (0 to 8) from one PL-TW, or None."""
-    try:
-        from pymodbus.client import ModbusTcpClient
-    except ImportError:
-        log("pymodbus not installed: pip install pymodbus"); return None
+    from pymodbus.client import ModbusTcpClient
     cl = ModbusTcpClient(box["ip"], port=box.get("port", 502), timeout=3)
     if not cl.connect():
-        log(f"{box['name']}: no connection to {box['ip']}"); return None
+        if not quiet: log(f"{box['name']}: no connection to {box['ip']}")
+        return None
     try:
         # pymodbus renamed the unit argument: slave= up to 3.8, device_id= from 3.9 on.
         params = inspect.signature(cl.read_input_registers).parameters
         unit_kw = "device_id" if "device_id" in params else "slave"
         rr = cl.read_input_registers(0, count=9, **{unit_kw: box.get("unit", 1)})
         if rr.isError():
-            log(f"{box['name']}: modbus error {rr}"); return None
+            if not quiet: log(f"{box['name']}: modbus error {rr}")
+            return None
         return list(rr.registers)
     except Exception as e:
-        log(f"{box['name']}: {e}"); return None
+        if not quiet: log(f"{box['name']}: {e}")
+        return None
     finally:
         cl.close()
+
+def to_c(raw):
+    """Raw register to degrees C, or None for an open channel."""
+    if raw >= 32768: raw -= 65536          # signed
+    if raw in (-32768, 32767): return None  # open channel markers, confirm with SiteView
+    return raw * CFG.get("scale_c", 0.1) + CFG.get("offset_c", 0.0)
 
 def read_logger(box):
     """Read one PL-TW. Returns {channel_number: value_F or None}.
     PL-TW exposes nine input registers, 0 to 8, as live readings (firmware 2.06+).
-    Register scaling is set in config (raw * scale + offset) once confirmed against SiteView; default assumes 0.1 C per count."""
+    Scale is set in lab.json once confirmed against SiteView; default assumes 0.1 C per count."""
     regs = read_registers(box)
     if regs is None: return {}
-    out = {}
-    for ch in range(1, 9):
-        raw = regs[ch] if ch < len(regs) else None
-        if raw is None: continue
-        if raw >= 32768: raw -= 65536          # signed
-        if raw in (-32768, 32767): out[ch] = None   # open channel markers, confirm with SiteView
-        else: out[ch] = c_to_f(raw * CFG.get("scale_c", 0.1) + CFG.get("offset_c", 0.0))
-    return out
+    return {ch: c_to_f(to_c(regs[ch])) for ch in range(1, 9) if ch < len(regs)}
 
 def read_weatherlink():
     """Davis WeatherLink Live local API on the LAN: http://<ip>/v1/current_conditions"""
@@ -104,32 +113,96 @@ def read_weatherlink():
     except Exception as e:
         log("weatherlink:", e); return None
 
+# ---------- setup helpers ----------
+
+def lan_prefix():
+    """First three numbers of this PC's address on the lab network, e.g. 192.168.1"""
+    if os.environ.get("N50_SUBNET"): return os.environ["N50_SUBNET"]   # for testing
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80)); ip = s.getsockname()[0]   # no packet is sent
+    finally:
+        s.close()
+    return ip.rsplit(".", 1)[0]
+
+MODBUS_PORT = int(os.environ.get("N50_PORT", 502))   # override for testing only
+
+def port_open(ip, port=MODBUS_PORT):
+    try:
+        with socket.create_connection((ip, port), timeout=0.6): return ip
+    except OSError:
+        return None
+
+def find_loggers():
+    """--find: scan the /24 for Modbus on 502, keep the ones that answer like a PL-TW, write config.json."""
+    pre = lan_prefix()
+    log(f"Looking for loggers on {pre}.1 to {pre}.254 ...")
+    with ThreadPoolExecutor(64) as ex:
+        hits = [ip for ip in ex.map(port_open, [f"{pre}.{i}" for i in range(1, 255)]) if ip]
+    found = []
+    for ip in sorted(hits, key=lambda a: int(a.rsplit(".", 1)[1])):
+        box = {"name": f"PL-{ip.rsplit('.', 1)[1]}", "ip": ip, "port": MODBUS_PORT, "unit": 1}
+        if read_registers(box, quiet=True) is not None: found.append(box)
+    local = read_json(LOCAL)
+    local["loggers"] = found
+    local.setdefault("push", False)
+    with open(LOCAL, "w", encoding="utf-8") as f: json.dump(local, f, indent=1)
+    log(f"Found {len(found)} logger(s): " + (", ".join(f"{b['name']} at {b['ip']}" for b in found) or "none"))
+    return len(found)
+
 def raw_dump():
-    """--raw: show register 0 to 8 per logger, as stored and as signed, for the SiteView check."""
+    """--raw: one table per logger, for a photo next to SiteView."""
+    print()
+    print("  Compare with SiteView. Take ONE photo showing this window AND SiteView. Send it to Michael.")
+    print()
     for box in CFG["loggers"]:
         regs = read_registers(box)
         if regs is None: continue
-        signed = [r - 65536 if r >= 32768 else r for r in regs]
-        log(f"{box['name']} ({box['ip']})")
-        for i, (r, s) in enumerate(zip(regs, signed)):
-            log(f"   register {i}: {r}   signed {s}   at scale {CFG.get('scale_c', 0.1)} = {s * CFG.get('scale_c', 0.1) + CFG.get('offset_c', 0.0):.2f} C")
+        print(f"  {box['name']}   ({box['ip']})")
+        for ch in range(1, 9):
+            if ch >= len(regs): break
+            c = to_c(regs[ch])
+            shown = "  no probe" if c is None else f"{c:8.1f} C"
+            print(f"     channel {ch}: {shown}      raw {regs[ch]}")
+        print(f"     (register 0: raw {regs[0]})")
+        print()
+    log("raw readings shown for", len(CFG["loggers"]), "logger(s)")
+
+def git_exe():
+    """git on PATH, or Git for Windows' usual place if a scheduled run hasn't picked up PATH yet."""
+    for p in (shutil.which("git"), r"C:\Program Files\Git\cmd\git.exe", r"C:\Program Files (x86)\Git\cmd\git.exe"):
+        if p and os.path.exists(p): return p
+    return "git"
 
 def git(*args):
-    r = subprocess.run(["git", "-C", ROOT, *args], capture_output=True, text=True)
+    r = subprocess.run([git_exe(), "-C", ROOT, *args], capture_output=True, text=True)
     if r.returncode != 0 and r.stderr.strip():
         log("git", args[0], ":", r.stderr.strip().splitlines()[-1])
     return r.returncode
 
+WHO = ["-c", "user.name=N50 Lab Bridge", "-c", "user.email=lab-bridge@n50.invalid"]
+
 def push(now):
-    # Identity for the commit only, so the lab PC needs no global git setup.
-    who = ["-c", "user.name=N50 Lab Bridge", "-c", "user.email=lab-bridge@n50.invalid"]
     git("add", "data")
-    git(*who, "commit", "-q", "-m", f"lab data {now}")
+    git(*WHO, "commit", "-q", "-m", f"lab data {now}")
     # Pick up any page changes made from New York before pushing, or the push is refused.
-    git(*who, "pull", "-q", "--rebase", "-X", "theirs")
+    git(*WHO, "pull", "-q", "--rebase", "-X", "theirs")
     if git("push", "-q") == 0: log("pushed")
 
 def main():
+    if "--find" in sys.argv:
+        load_config(); find_loggers(); return
+    if "--push-on" in sys.argv:
+        local = read_json(LOCAL); local["push"] = True
+        with open(LOCAL, "w", encoding="utf-8") as f: json.dump(local, f, indent=1)
+        log("upload switched on"); return
+    load_config()
+    if CFG.get("push"):
+        git(*WHO, "pull", "-q", "--rebase", "-X", "theirs")   # fresh lab.json from New York
+        load_config()
+    if not CFG["loggers"]:
+        log("No loggers in bridge/config.json. Run setup again (or: python bridge/poll_lab.py --find).")
+        sys.exit(1)
     if "--raw" in sys.argv:
         raw_dump(); return
     os.makedirs(DATA, exist_ok=True)
@@ -148,6 +221,10 @@ def main():
     # rolling CSV, one row per run, one column per probe
     cols = ["time_utc"] + sorted(probes) + (["wx_temp_f", "wx_hum", "wx_wind_mph"] if wx else [])
     path = os.path.join(DATA, "log.csv"); new = not os.path.exists(path)
+    if not new:
+        with open(path, encoding="utf-8") as f: old_cols = f.readline().strip().split(",")
+        if old_cols != cols:   # channels renamed or a logger added: keep the old file, start a new one
+            os.replace(path, os.path.join(DATA, f"log_until_{now[:19].replace(':', '')}.csv")); new = True
     with open(path, "a", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         if new: w.writerow(cols)

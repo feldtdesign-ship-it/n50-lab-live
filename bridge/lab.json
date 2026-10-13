@@ -1,0 +1,8 @@
+{
+ "_note": "Edited from New York, pulled by the lab PC every run. Nobody at the lab touches this. Logger names are PL- plus the last number of the logger's IP, found by setup. Channel keys are name.chN, e.g. PL-104.ch1.",
+ "site": "North 50 Lab",
+ "scale_c": 0.1,
+ "offset_c": 0.0,
+ "weatherlink_ip": "",
+ "channels": {}
+}

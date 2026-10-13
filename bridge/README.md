@@ -1,28 +1,31 @@
 # Lab bridge
 
-**Setting up the lab PC? Follow [SETUP_THOR.md](../SETUP_THOR.md).** It is the step-by-step version of this page for Windows.
+**Setting up the lab PC? Follow [SETUP_THOR.md](../SETUP_THOR.md).** One pasted line runs `setup.ps1`, which does everything below.
 
-One script on the always-on lab computer. It reads the five PRECISE-LOG PL-TW loggers over Modbus TCP, reads the Davis WeatherLink Live if there is one, writes `data/latest.json` and `data/log.csv`, and pushes them to this repo so the public page updates. Nothing at the lab is exposed to the internet.
+`poll_lab.py` runs on the always-on lab PC every 15 minutes. It reads the PRECISE-LOG PL-TW loggers over Modbus TCP and the Davis WeatherLink Live if set, writes `data/latest.json` and `data/log.csv`, and pushes them to this repo so the page updates. Nothing at the lab is exposed to the internet: the PC only sends out, so no DDNS and no port forwarding.
 
-## Setup, once
+## What setup.ps1 does
 
-1. On the lab computer: `pip install pymodbus requests`
-2. Copy `config.example.json` to `config.json`. Put in each logger's IP from the UniFi client list, and the WeatherLink Live IP when it exists.
-3. Fill the `channels` map from Kevin's channel schedule. The `id` is what the page shows.
-4. Run `python bridge/poll_lab.py --raw` to see the raw registers, then `python bridge/poll_lab.py` once by hand, and check `data/latest.json` reads sensibly against SiteView. If the numbers are off by a factor, adjust `scale_c`. The PL-TW manual gives the register scaling; 0.1 C per count is the assumption.
-5. Set `"push": true`, make sure `git push` works from that computer, and schedule the script every 15 minutes.
+1. Installs Python 3.12 and Git with winget if missing.
+2. Clones this repo to `C:\N50\n50-lab-live`. Fetch is over https (no key); push is over ssh with a key kept in `C:\N50\key`.
+3. `poll_lab.py --find` scans the PC's /24 for port 502 and keeps whatever answers like a PL-TW. Loggers are named `PL-` plus the last number of their IP.
+4. `poll_lab.py --raw` prints readings for the SiteView photo.
+5. Makes the key, copies the public half to the clipboard, and stops until GitHub accepts it. Michael adds it as a deploy key with write access.
+6. `--push-on`, first push, then a scheduled task **N50 Lab Bridge** every 15 minutes with `pythonw` (no window).
 
-Windows: see step 8 of SETUP_THOR.md (Task Scheduler, `pythonw`, every 15 minutes).
-Linux or macOS: `*/15 * * * * /usr/bin/python3 /path/n50-lab-live/bridge/poll_lab.py`
+Rerunning it is safe; it skips what's done.
 
-## What the page does with it
+## Settings
 
-`index.html` fetches `data/latest.json` from the same site. When it is present and fresh, the probe table and the thermal paint use the live values and the THERM curve stays as the model line. When it is missing or stale, the page says so and falls back to the simulation.
+- `bridge/lab.json`, in the repo, edited from New York: `scale_c`, `offset_c`, `weatherlink_ip`, and `channels`. The lab PC pulls it every run.
+- `bridge/config.json`, on the lab PC only, written by `--find`: logger addresses and `push`.
+
+Channel keys are `PL-<n>.chN`, e.g. `"PL-104.ch1": {"id": "V1 ci", "wall": "A", "lite": "V1", "face": "in", "station": "centre"}`. The `id` is what the page shows. Renaming channels starts a new `log.csv`; the old one is kept as `log_until_<time>.csv`.
 
 ## Register note
 
-The PL-TW serves nine input registers, 0 to 8, as live channel readings from firmware 2.06. Which register is which channel, the open-channel marker, and the scaling need one check against SiteView on site. That is the only unknown in this script.
+The PL-TW serves nine input registers, 0 to 8, as live readings from firmware 2.06. Registers 1 to 8 are assumed to be channels 1 to 8 at 0.1 C per count, with 32767 and -32768 as open channel. The SiteView photo confirms or corrects this; fix it in `lab.json`.
 
 ## Log
 
-Every run appends to `bridge/bridge.log` on the lab PC. `config.json` and the log stay local (see `.gitignore`).
+Every run appends to `bridge/bridge.log` on the lab PC.
