@@ -17,10 +17,11 @@ Rerunning it is safe; it skips what's done.
 
 ## Settings
 
-- `bridge/lab.json`, in the repo, edited from New York: `scale_c`, `offset_c`, `weatherlink_ip`, and `channels`. The lab PC pulls it every run.
+- `bridge/lab.json`, in the repo, edited from New York: `scale_c`, `offset_c`, `weatherlink_ip`, `boxes`, and `channels`. The lab PC pulls it every run.
+- `boxes` maps each logger's hardware (MAC) address to its name, e.g. `"aa:bb:cc:dd:ee:ff": "VW-1"`. `--find` records the address from the PC's ARP table. If a logger stops answering, each run looks for its hardware address elsewhere on the network and updates its IP, so names survive the router handing out new addresses. No router changes needed.
 - `bridge/config.json`, on the lab PC only, written by `--find`: logger addresses and `push`.
 
-Channel keys are `PL-<n>.chN`, e.g. `"PL-104.ch1": {"id": "V1 ci", "wall": "A", "lite": "V1", "face": "in", "station": "centre"}`. The `id` is what the page shows. Renaming channels starts a new `log.csv`; the old one is kept as `log_until_<time>.csv`.
+Channel keys are `<box name>.chN`, e.g. `"VW-1.ch1": {"id": "V1 ci", "wall": "A", "lite": "V1", "face": "in", "station": "centre"}`. The `id` is what the page shows. Renaming channels starts a new `log.csv`; the old one is kept as `log_until_<time>.csv`.
 
 ## Register note
 

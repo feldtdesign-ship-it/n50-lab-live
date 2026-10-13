@@ -25,7 +25,7 @@ Every run also appends to bridge/bridge.log.
 Requires: pip install pymodbus requests
 Normal setup on Windows is bridge/setup.ps1, which does all of this.
 """
-import json, csv, os, sys, socket, subprocess, inspect, shutil
+import json, csv, os, re, sys, socket, subprocess, inspect, shutil
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
@@ -55,6 +55,27 @@ def load_config():
     CFG.update(read_json(os.path.join(HERE, "lab.json")))
     CFG.update(read_json(LOCAL))
     CFG.setdefault("loggers", [])
+    # Names set from New York in lab.json "boxes", keyed by hardware address, win over PL-<n>.
+    for box in CFG["loggers"]:
+        box["name"] = CFG.get("boxes", {}).get(box.get("mac") or "", box["name"])
+
+def parse_arp(text):
+    """{ip: mac} from `arp -a` output, Windows (aa-bb-..) or macOS/Linux (a:b:..) style."""
+    table = {}
+    for line in text.splitlines():
+        ip = re.search(r"\b(\d{1,3}(?:\.\d{1,3}){3})\b", line)
+        mac = re.search(r"(?<![0-9A-Fa-f:-])([0-9A-Fa-f]{1,2}(?:[:-][0-9A-Fa-f]{1,2}){5})(?![0-9A-Fa-f:-])", line)
+        if ip and mac:
+            m = ":".join(part.zfill(2) for part in re.split("[:-]", mac.group(1))).lower()
+            if m not in ("ff:ff:ff:ff:ff:ff", "00:00:00:00:00:00"): table[ip.group(1)] = m
+    return table
+
+def arp_table():
+    """The PC's own list of hardware addresses for devices it has just talked to. Read-only."""
+    try:
+        return parse_arp(subprocess.run(["arp", "-a"], capture_output=True, text=True, timeout=15).stdout)
+    except Exception:
+        return {}
 
 def c_to_f(c): return None if c is None else round(c * 9 / 5 + 32, 2)
 
@@ -133,22 +154,48 @@ def port_open(ip, port=MODBUS_PORT):
     except OSError:
         return None
 
-def find_loggers():
-    """--find: scan the /24 for Modbus on 502, keep the ones that answer like a PL-TW, write config.json."""
+def scan():
+    """Addresses on the PC's /24 answering on the Modbus port."""
     pre = lan_prefix()
-    log(f"Looking for loggers on {pre}.1 to {pre}.254 ...")
     with ThreadPoolExecutor(64) as ex:
-        hits = [ip for ip in ex.map(port_open, [f"{pre}.{i}" for i in range(1, 255)]) if ip]
+        return [ip for ip in ex.map(port_open, [f"{pre}.{i}" for i in range(1, 255)]) if ip]
+
+def find_loggers():
+    """--find: scan the /24 for Modbus on 502, keep the ones that answer like a PL-TW, note each one's
+    hardware address, write config.json."""
+    log(f"Looking for loggers on {lan_prefix()}.1 to {lan_prefix()}.254 ...")
+    hits = scan()
     found = []
     for ip in sorted(hits, key=lambda a: int(a.rsplit(".", 1)[1])):
         box = {"name": f"PL-{ip.rsplit('.', 1)[1]}", "ip": ip, "port": MODBUS_PORT, "unit": 1}
         if read_registers(box, quiet=True) is not None: found.append(box)
+    arp = arp_table()
+    for box in found:
+        box["mac"] = arp.get(box["ip"], "")
     local = read_json(LOCAL)
     local["loggers"] = found
     local.setdefault("push", False)
     with open(LOCAL, "w", encoding="utf-8") as f: json.dump(local, f, indent=1)
     log(f"Found {len(found)} logger(s): " + (", ".join(f"{b['name']} at {b['ip']}" for b in found) or "none"))
     return len(found)
+
+def relocate():
+    """If a logger stopped answering at its address, look for its hardware address elsewhere on the
+    network (the router may have given it a new one) and update config.json. No router changes needed."""
+    missing = [b for b in CFG["loggers"] if b.get("mac") and not port_open(b["ip"], b.get("port", MODBUS_PORT))]
+    if not missing: return
+    log("Not answering:", ", ".join(b["name"] for b in missing), "- looking for them by hardware address")
+    scan()
+    where = {mac: ip for ip, mac in arp_table().items()}
+    lost = {b["mac"] for b in missing}
+    local = read_json(LOCAL); moved = 0
+    for saved in local.get("loggers", []):
+        new_ip = where.get(saved.get("mac"))
+        if saved.get("mac") in lost and new_ip and new_ip != saved["ip"]:
+            log(f"{saved['mac']} moved {saved['ip']} -> {new_ip}"); saved["ip"] = new_ip; moved += 1
+    if moved:
+        with open(LOCAL, "w", encoding="utf-8") as f: json.dump(local, f, indent=1)
+        load_config()
 
 def raw_dump():
     """--raw: one table per logger, for a photo next to SiteView."""
@@ -158,7 +205,7 @@ def raw_dump():
     for box in CFG["loggers"]:
         regs = read_registers(box)
         if regs is None: continue
-        print(f"  {box['name']}   ({box['ip']})")
+        print(f"  {box['name']}   ({box['ip']}, hardware {box.get('mac') or 'unknown'})")
         for ch in range(1, 9):
             if ch >= len(regs): break
             c = to_c(regs[ch])
@@ -203,6 +250,7 @@ def main():
     if not CFG["loggers"]:
         log("No loggers in bridge/config.json. Run setup again (or: python bridge/poll_lab.py --find).")
         sys.exit(1)
+    relocate()
     if "--raw" in sys.argv:
         raw_dump(); return
     os.makedirs(DATA, exist_ok=True)
