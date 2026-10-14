@@ -3,13 +3,14 @@
 N50 Lab bridge. Runs on the always-on lab PC, on the same network as the loggers.
 
 Every run it:
-  1. pulls this repo, so channel names and scale set from New York (bridge/lab.json) take effect,
-  2. reads each PRECISE-LOG PL-TW over Modbus TCP (input registers, live channel values),
+  1. downloads bridge/lab.json (names and scale set from New York) as plain data, checked, never run,
+  2. reads each PRECISE-LOG PL-TW over Modbus TCP (read input registers only, nothing is ever written),
   3. reads the Davis WeatherLink Live local API if one is set,
-  4. writes data/latest.json and appends to data/log.csv,
-  5. commits and pushes data/ so the public page updates.
+  4. writes latest.json and appends to log.csv in the data folder (C:/N50/lab-data on the lab PC),
+  5. pushes the data folder to the repo's lab-data branch, which holds data only.
 
 Nothing at the lab is opened to the internet. The PC only sends out.
+This script never downloads code. It only changes when someone re-runs setup on purpose.
 
 Usage:
   python bridge/poll_lab.py          normal run (what Task Scheduler calls every 15 minutes)
@@ -19,6 +20,7 @@ Usage:
 
 Settings:
   bridge/lab.json     shared, in the repo: scale, channel names, weather station. Edited from New York.
+                      Fetched each run into bridge/lab_cache.json; only known keys of the right type are kept.
   bridge/config.json  this PC only, written by --find: logger addresses and whether to push.
 Every run also appends to bridge/bridge.log.
 
@@ -31,7 +33,11 @@ from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-DATA = os.path.join(ROOT, "data")
+DATA = os.environ.get("N50_DATA_DIR") or os.path.join(os.path.dirname(ROOT), "lab-data")
+DATA_BRANCH = "lab-data"
+SETTINGS_URL = os.environ.get("N50_SETTINGS_URL") or \
+    "https://raw.githubusercontent.com/feldtdesign-ship-it/n50-lab-live/main/bridge/lab.json"
+CACHE = os.path.join(HERE, "lab_cache.json")
 LOG = os.path.join(HERE, "bridge.log")
 LOCAL = os.path.join(HERE, "config.json")
 CFG = {}
@@ -49,10 +55,34 @@ def read_json(path):
     if not os.path.exists(path): return {}
     with open(path, encoding="utf-8") as f: return json.load(f)
 
+# Settings from New York are data. Only these keys, only these types, are ever used.
+SETTING_TYPES = {"site": str, "scale_c": (int, float), "offset_c": (int, float),
+                 "weatherlink_ip": str, "boxes": dict, "channels": dict}
+
+def clean_settings(raw):
+    if not isinstance(raw, dict): return {}
+    out = {k: v for k, v in raw.items() if k in SETTING_TYPES and isinstance(v, SETTING_TYPES[k])}
+    out["boxes"] = {str(k): str(v) for k, v in out.get("boxes", {}).items() if isinstance(v, str)}
+    out["channels"] = {str(k): {kk: vv for kk, vv in v.items() if isinstance(vv, (str, int, float))}
+                       for k, v in out.get("channels", {}).items() if isinstance(v, dict)}
+    return out
+
+def fetch_settings():
+    """Download lab.json from the repo as plain data and keep a cached copy. On failure, keep the last good one."""
+    try:
+        import requests
+        r = requests.get(SETTINGS_URL, timeout=10)
+        r.raise_for_status()
+        settings = clean_settings(r.json())
+        with open(CACHE, "w", encoding="utf-8") as f: json.dump(settings, f, indent=1)
+    except Exception as e:
+        log("settings download failed, using last copy:", type(e).__name__)
+
 def load_config():
-    """Shared lab.json first, then this PC's config.json on top."""
+    """Shared settings (last download, else the copy installed with the code), then this PC's config.json on top."""
     CFG.clear()
-    CFG.update(read_json(os.path.join(HERE, "lab.json")))
+    shared = read_json(CACHE) if os.path.exists(CACHE) else read_json(os.path.join(HERE, "lab.json"))
+    CFG.update(clean_settings(shared))
     CFG.update(read_json(LOCAL))
     CFG.setdefault("loggers", [])
     # Names set from New York in lab.json "boxes", keyed by hardware address, win over PL-<n>.
@@ -221,20 +251,43 @@ def git_exe():
         if p and os.path.exists(p): return p
     return "git"
 
-def git(*args):
-    r = subprocess.run([git_exe(), "-C", ROOT, *args], capture_output=True, text=True)
-    if r.returncode != 0 and r.stderr.strip():
+def git(*args, repo=None, quiet=False):
+    r = subprocess.run([git_exe(), "-C", repo or ROOT, *args], capture_output=True, text=True)
+    if r.returncode != 0 and r.stderr.strip() and not quiet:
         log("git", args[0], ":", r.stderr.strip().splitlines()[-1])
-    return r.returncode
+    return r
 
 WHO = ["-c", "user.name=N50 Lab Bridge", "-c", "user.email=lab-bridge@n50.invalid"]
 
+def ensure_data_repo():
+    """The data folder is its own clone of the lab-data branch, which holds data only.
+    Its upload settings are copied from the code folder that setup configured."""
+    if os.path.isdir(os.path.join(DATA, ".git")): return True
+    url = git("config", "--get", "remote.origin.url").stdout.strip()
+    r = subprocess.run([git_exe(), "clone", "-q", "--single-branch", "-b", DATA_BRANCH, url, DATA],
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        log("could not set up the data folder:", (r.stderr.strip().splitlines() or ["?"])[-1]); return False
+    for key in ("remote.origin.pushurl", "core.sshCommand"):
+        val = git("config", "--get", key, quiet=True).stdout.strip()
+        if val: git("config", key, val, repo=DATA)
+    # Carry over readings from an install that kept them inside the code folder.
+    old = os.path.join(ROOT, "data")
+    if os.path.isdir(old):
+        for name in os.listdir(old):
+            if name.endswith(".csv") and not os.path.exists(os.path.join(DATA, name)):
+                shutil.copy2(os.path.join(old, name), os.path.join(DATA, name))
+    log("data folder ready:", DATA)
+    return True
+
 def push(now):
-    git("add", "data")
-    git(*WHO, "commit", "-q", "-m", f"lab data {now}")
-    # Pick up any page changes made from New York before pushing, or the push is refused.
-    git(*WHO, "pull", "-q", "--rebase", "-X", "theirs")
-    if git("push", "-q") == 0: log("pushed")
+    git("add", "-A", repo=DATA)
+    git(*WHO, "commit", "-q", "-m", f"lab data {now}", repo=DATA, quiet=True)
+    if git("push", "-q", "origin", f"HEAD:{DATA_BRANCH}", repo=DATA, quiet=True).returncode != 0:
+        # Only the lab writes this branch, so a refusal is rare. Catch up and try once more.
+        git(*WHO, "pull", "-q", "--rebase", "-X", "theirs", "origin", DATA_BRANCH, repo=DATA)
+        if git("push", "-q", "origin", f"HEAD:{DATA_BRANCH}", repo=DATA).returncode != 0: return
+    log("pushed")
 
 def main():
     if "--find" in sys.argv:
@@ -243,16 +296,16 @@ def main():
         local = read_json(LOCAL); local["push"] = True
         with open(LOCAL, "w", encoding="utf-8") as f: json.dump(local, f, indent=1)
         log("upload switched on"); return
+    fetch_settings()
     load_config()
-    if CFG.get("push"):
-        git(*WHO, "pull", "-q", "--rebase", "-X", "theirs")   # fresh lab.json from New York
-        load_config()
     if not CFG["loggers"]:
         log("No loggers in bridge/config.json. Run setup again (or: python bridge/poll_lab.py --find).")
         sys.exit(1)
     relocate()
     if "--raw" in sys.argv:
         raw_dump(); return
+    if CFG.get("push"):
+        if not ensure_data_repo(): sys.exit(1)
     os.makedirs(DATA, exist_ok=True)
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     probes = {}

@@ -13,7 +13,7 @@ A simulated sensor dashboard for the North 50 Building Systems window lab in Fai
 
 ## Going live
 
-`bridge/` holds the script that runs on the lab computer, reads the loggers over Modbus and the Davis WeatherLink Live on the LAN, and pushes `data/latest.json` here every 15 minutes. The page reads that file and switches from simulation to live on its own. See `bridge/README.md`, and [SETUP_THOR.md](SETUP_THOR.md) for the lab PC install.
+`bridge/` holds the script that runs on the lab computer, reads the loggers over Modbus and the Davis WeatherLink Live on the LAN, and pushes `latest.json` to the `lab-data` branch every 15 minutes. The page reads that file and switches from simulation to live on its own. See `bridge/README.md`, and [SETUP_THOR.md](SETUP_THOR.md) for the lab PC install.
 
 ## Files
 

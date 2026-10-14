@@ -1,5 +1,5 @@
 {
- "_note": "Edited from New York, pulled by the lab PC every run. Nobody at the lab touches this. boxes maps each logger's hardware address to its name (VW-1, LW-1...); until named, a logger is PL- plus the last number of its IP. Channel keys are name.chN, e.g. VW-1.ch1.",
+ "_note": "Edited from New York. The lab PC downloads it as data every run and keeps only known settings. Nobody at the lab touches this. boxes maps each logger's hardware address to its name (VW-1, LW-1...); until named, a logger is PL- plus the last number of its IP. Channel keys are name.chN, e.g. VW-1.ch1.",
  "site": "North 50 Lab",
  "scale_c": 0.1,
  "offset_c": 0.0,
