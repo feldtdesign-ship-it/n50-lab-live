@@ -1,11 +1,14 @@
 # N50 lab window banks, Blender 5. Standalone: run headless with
-#   /Applications/Blender.app/Contents/MacOS/Blender --background --python build_banks.py -- /path/out.glb
+#   /Applications/Blender.app/Contents/MacOS/Blender --background --python build_banks_blender.py -- /path/out.glb
 # or paste into Blender's console with the MCP addon on. Metres.
-# Bank A, Vitro Wall, from the UniFi camera frame scaled off a 36 x 80 in door. Lower row: three 44 x 86 in Vitro VIG units,
-#   V1 VIG in, V2 no second layer, V3 VIG out (Kevin, 6 Oct 2026). Transoms 44 x 48 in assumed, not instrumented.
-# Bank B, LuxWall, three openings 36 x 80 in assumed. Kevin numbers six lites L1 to L6; layout to confirm.
-# Probes per Kevin, 6 Oct 2026: centre of glass interior, centre of glass exterior, edge of glass interior, per lite.
-#   Plus two interior and two exterior ambient air thermocouples per wall.
+# Corrected 2026-10-16: the two walls were swapped. Kevin, 6 Oct: "LuxWall is named with numbers on the frame. L1 to L6",
+#   "Vitro goes from left to right V1 to V3".
+# Bank A, Vitro Wall: the lab wall with three openings in drywall, 36 x 80 in assumed.
+#   V1 VIG in, V2 no second layer, V3 VIG out, left to right.
+# Bank B, LuxWall: the house wall, one frame, three lites across and two high. Lower 44 x 86 in, upper 44 x 48 in,
+#   scaled off the 36 x 80 in door. Numbering assumed: L1 to L3 lower row, L4 to L6 upper row, left to right. To confirm.
+# Probes per Kevin's SiteView channel names, 16 Oct 2026: centre of glass interior, centre of glass exterior,
+#   edge of glass interior, per lite. One interior and one exterior ambient air thermocouple per wall.
 import bpy, sys, os
 from mathutils import Vector
 IN = 0.0254
@@ -63,53 +66,52 @@ fw, D = 0.07, 0.30
 yI, yX = -0.015, 0.015
 e = 0.035   # edge probe, 35 mm in from the sight line
 
-# ---------- Bank A, Vitro Wall ----------
+# ---------- Bank A, Vitro Wall (lab, three openings) ----------
 A = empty("N50_BankA_VitroWall", (0, 0, 0))
+ow, oh, osill = 36 * IN, 80 * IN, 0.70; ops = [-2.0, 0.0, 2.0]
+piers = [(-3.3, ops[0] - ow / 2 - fw), (ops[0] + ow / 2 + fw, ops[1] - ow / 2 - fw), (ops[1] + ow / 2 + fw, ops[2] - ow / 2 - fw), (ops[2] + ow / 2 + fw, 3.3)]
+for i, (a, b) in enumerate(piers): box(f"N50_A_pier_{i}", (b - a, D, oh + 2 * fw), ((a + b) / 2, 0, osill + oh / 2), M_WALL, A)
+box("N50_A_wall_T", (6.6, D, 3.2 - (osill + oh + fw)), (0, 0, (osill + oh + fw + 3.2) / 2), M_WALL, A)
+box("N50_A_wall_B", (6.6, D, osill - fw), (0, 0, (osill - fw) / 2), M_WALL, A)
+for i, x in enumerate(ops):
+    box(f"N50_A_glass_{i+1}", (ow, 0.02, oh), (x, 0.0, osill + oh / 2), M_GLASS, A)
+    box(f"N50_A_jambL_{i+1}", (fw, D, oh + 2 * fw), (x - ow / 2 - fw / 2, 0.0, osill + oh / 2), M_FRAME, A)
+    box(f"N50_A_jambR_{i+1}", (fw, D, oh + 2 * fw), (x + ow / 2 + fw / 2, 0.0, osill + oh / 2), M_FRAME, A)
+    box(f"N50_A_head_{i+1}", (ow + 2 * fw, D, fw), (x, 0.0, osill + oh + fw / 2), M_FRAME, A)
+    box(f"N50_A_sill_{i+1}", (ow + 2 * fw, D, fw), (x, 0.0, osill - fw / 2), M_FRAME, A)
+box("N50_A_plywood", (0.55, 0.02, 0.70), (1.05, -D / 2 - 0.01, 1.70), M_PLY, A)
+for i, x in enumerate(ops):
+    z = osill + oh * 0.5
+    probe(f"N50_A_P_V{i+1}_ci", (x, yI, z), A, lead_to_z=osill + oh)
+    probe(f"N50_A_P_V{i+1}_ce", (x, yX, z), A, ext=True, lead_to_z=osill + oh)
+    probe(f"N50_A_P_V{i+1}_ei", (x - ow / 2 + e, yI, z), A, lead_to_z=osill + oh)
+probe("N50_A_P_air_in1", (-1.0, -0.45, osill + oh - 0.2), A, lead_to_z=osill + oh + 0.3, r=0.025)
+probe("N50_A_P_air_out1", (-1.0, 0.45, osill + oh - 0.2), A, ext=True, lead_to_z=osill + oh + 0.3, r=0.025)
+
+# ---------- Bank B, LuxWall (house, one frame, six lites) ----------
+B = empty("N50_BankB_LuxWall", (9.0, 0.0, 0.0))
 uw, uh, th = 44 * IN, 86 * IN, 48 * IN; sill = 0.50
 cols = [-(uw + fw), 0.0, (uw + fw)]
 z_low = sill + uh / 2; z_hi = sill + uh + fw + th / 2; head = sill + uh + fw + th
 ox0, ox1 = -(1.5 * uw + 2 * fw), (1.5 * uw + 2 * fw); oz0, oz1 = sill - fw, head + fw
-wall_around("N50_A_wall", M_CLAD, A, ox0 - 1.0, ox1 + 1.0, 0.0, oz1 + 0.5, ox0, ox1, oz0, oz1, D)
+wall_around("N50_B_wall", M_CLAD, B, ox0 - 1.0, ox1 + 1.0, 0.0, oz1 + 0.5, ox0, ox1, oz0, oz1, D)
 for i, x in enumerate(cols):
-    box(f"N50_A_vitro_{i+1}", (uw, 0.02, uh), (x, 0.0, z_low), M_GLASS, A)
-    box(f"N50_A_transom_{i+1}", (uw, 0.02, th), (x, 0.0, z_hi), M_GLASS, A)
+    box(f"N50_B_glass_{i+1}", (uw, 0.02, uh), (x, 0.0, z_low), M_GLASS, B)
+    box(f"N50_B_glass_{i+4}", (uw, 0.02, th), (x, 0.0, z_hi), M_GLASS, B)
 for i, x in enumerate([-1.5 * uw - 1.5 * fw, -0.5 * uw - 0.5 * fw, 0.5 * uw + 0.5 * fw, 1.5 * uw + 1.5 * fw]):
-    box(f"N50_A_mull_{i}", (fw, D, head - sill + 2 * fw), (x, 0.0, (sill + head) / 2), M_FRAME, A)
-box("N50_A_transom_bar", (3 * uw + 4 * fw, D, fw), (0, 0.0, sill + uh + fw / 2), M_FRAME, A)
-box("N50_A_head", (3 * uw + 4 * fw, D, fw), (0, 0.0, head + fw / 2), M_FRAME, A)
-box("N50_A_sill", (3 * uw + 4 * fw, D, fw), (0, 0.0, sill - fw / 2), M_FRAME, A)
-for i, x in enumerate(cols):
-    z = sill + uh * 0.5
-    probe(f"N50_A_P_V{i+1}_ci", (x, yI, z), A, lead_to_z=sill + uh)
-    probe(f"N50_A_P_V{i+1}_ce", (x, yX, z), A, ext=True, lead_to_z=sill + uh)
-    xe = x + uw / 2 - e if i < 2 else x - uw / 2 + e
-    probe(f"N50_A_P_V{i+1}_ei", (xe, yI, z), A, lead_to_z=sill + uh)
-for j, x in enumerate([-0.9, 0.9]):
-    probe(f"N50_A_P_air_in{j+1}", (x, -0.45, head - 0.3), A, lead_to_z=head + 0.2, r=0.025)
-    probe(f"N50_A_P_air_out{j+1}", (x, 0.45, head - 0.3), A, ext=True, lead_to_z=head + 0.2, r=0.025)
-
-# ---------- Bank B, LuxWall ----------
-B = empty("N50_BankB_LuxWall", (9.0, 0.0, 0.0))
-ow, oh, osill = 36 * IN, 80 * IN, 0.70; ops = [-2.0, 0.0, 2.0]
-piers = [(-3.3, ops[0] - ow / 2 - fw), (ops[0] + ow / 2 + fw, ops[1] - ow / 2 - fw), (ops[1] + ow / 2 + fw, ops[2] - ow / 2 - fw), (ops[2] + ow / 2 + fw, 3.3)]
-for i, (a, b) in enumerate(piers): box(f"N50_B_pier_{i}", (b - a, D, oh + 2 * fw), ((a + b) / 2, 0, osill + oh / 2), M_WALL, B)
-box("N50_B_wall_T", (6.6, D, 3.2 - (osill + oh + fw)), (0, 0, (osill + oh + fw + 3.2) / 2), M_WALL, B)
-box("N50_B_wall_B", (6.6, D, osill - fw), (0, 0, (osill - fw) / 2), M_WALL, B)
-for i, x in enumerate(ops):
-    box(f"N50_B_glass_{i+1}", (ow, 0.02, oh), (x, 0.0, osill + oh / 2), M_GLASS, B)
-    box(f"N50_B_jambL_{i+1}", (fw, D, oh + 2 * fw), (x - ow / 2 - fw / 2, 0.0, osill + oh / 2), M_FRAME, B)
-    box(f"N50_B_jambR_{i+1}", (fw, D, oh + 2 * fw), (x + ow / 2 + fw / 2, 0.0, osill + oh / 2), M_FRAME, B)
-    box(f"N50_B_head_{i+1}", (ow + 2 * fw, D, fw), (x, 0.0, osill + oh + fw / 2), M_FRAME, B)
-    box(f"N50_B_sill_{i+1}", (ow + 2 * fw, D, fw), (x, 0.0, osill - fw / 2), M_FRAME, B)
-box("N50_B_plywood", (0.55, 0.02, 0.70), (1.05, -D / 2 - 0.01, 1.70), M_PLY, B)
-for i, x in enumerate(ops):
-    z = osill + oh * 0.5
-    probe(f"N50_B_P_L{i+1}_ci", (x, yI, z), B, lead_to_z=osill + oh)
-    probe(f"N50_B_P_L{i+1}_ce", (x, yX, z), B, ext=True, lead_to_z=osill + oh)
-    probe(f"N50_B_P_L{i+1}_ei", (x - ow / 2 + e, yI, z), B, lead_to_z=osill + oh)
-for j, x in enumerate([-1.0, 1.0]):
-    probe(f"N50_B_P_air_in{j+1}", (x, -0.45, osill + oh - 0.2), B, lead_to_z=osill + oh + 0.3, r=0.025)
-    probe(f"N50_B_P_air_out{j+1}", (x, 0.45, osill + oh - 0.2), B, ext=True, lead_to_z=osill + oh + 0.3, r=0.025)
+    box(f"N50_B_mull_{i}", (fw, D, head - sill + 2 * fw), (x, 0.0, (sill + head) / 2), M_FRAME, B)
+box("N50_B_transom_bar", (3 * uw + 4 * fw, D, fw), (0, 0.0, sill + uh + fw / 2), M_FRAME, B)
+box("N50_B_head", (3 * uw + 4 * fw, D, fw), (0, 0.0, head + fw / 2), M_FRAME, B)
+box("N50_B_sill", (3 * uw + 4 * fw, D, fw), (0, 0.0, sill - fw / 2), M_FRAME, B)
+for row, (zc, top, n0) in enumerate([(sill + uh * 0.5, sill + uh, 1), (z_hi, head, 4)]):
+    for i, x in enumerate(cols):
+        n = n0 + i
+        probe(f"N50_B_P_L{n}_ci", (x, yI, zc), B, lead_to_z=top)
+        probe(f"N50_B_P_L{n}_ce", (x, yX, zc), B, ext=True, lead_to_z=top)
+        xe = x + uw / 2 - e if i < 2 else x - uw / 2 + e
+        probe(f"N50_B_P_L{n}_ei", (xe, yI, zc), B, lead_to_z=top)
+probe("N50_B_P_air_in1", (-0.9, -0.45, head - 0.3), B, lead_to_z=head + 0.2, r=0.025)
+probe("N50_B_P_air_out1", (-0.9, 0.45, head - 0.3), B, ext=True, lead_to_z=head + 0.2, r=0.025)
 
 # ---------- export ----------
 argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []

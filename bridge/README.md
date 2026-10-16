@@ -1,5 +1,7 @@
 # Lab bridge
 
+**Current route, 2026-10-16:** `siteview_lab.py` runs on GitHub every 15 minutes (`.github/workflows/lab-data.yml`). It reads SiteView-Web's live feed and posts `latest.json` to the `lab-data` branch. Nothing is installed at the lab. The SiteView address is the repo secret `N50_SV_URL`. Channel names come from Kevin's SiteView list, mapped in the script. The `poll_lab.py` and `setup.ps1` route below was never run and is on hold.
+
 **Setting up the lab PC? Follow [SETUP_THOR.md](../SETUP_THOR.md).** One pasted line runs `setup.ps1`, which does everything below.
 
 `poll_lab.py` runs on the always-on lab PC every 15 minutes. It reads the PRECISE-LOG PL-TW loggers over Modbus TCP and the Davis WeatherLink Live if set, writes `latest.json` and `log.csv`, and pushes them to the **`lab-data` branch**, which holds data only. The page reads `latest.json` from that branch. Nothing at the lab is exposed to the internet: the PC only sends out, so no DDNS and no port forwarding.

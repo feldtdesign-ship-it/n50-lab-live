@@ -130,26 +130,26 @@ input[type=range]{accent-color:var(--amber);width:120px}
 
 <section class="grid g2 wall">
   <div class="panel">
-    <h2>Vitro Wall <span class="tag">house · south elevation · camera "Vitro Wall"</span></h2>
+    <h2>Vitro Wall <span class="tag">lab · three openings · V1 to V3 left to right</span></h2>
     <div class="stagewrap"><canvas id="stageA" class="stage"></canvas><div class="tscale" id="tscaleA" hidden><span class="mx">--</span><i></i><span class="mn">--</span><em>SIMULATED · ε 0.95</em></div>
-      <div class="ov"><b>VITRO WALL</b>V1 VIG in · V2 no second layer · V3 VIG out<br>44 × 86 in, transoms 44 × 48 in assumed<br>scaled off the 36 × 80 door</div></div>
+      <div class="ov"><b>VITRO WALL</b>V1 VIG in · V2 no second layer · V3 VIG out<br>three openings, 36 × 80 in assumed</div></div>
   </div>
   <div class="panel">
-    <h2>Vitro Wall probes <span class="tag">13 · per Kevin, 6 Oct · channels to be confirmed</span></h2>
+    <h2>Vitro Wall probes <span class="tag">11 · channels as Kevin named them in SiteView, 16 Oct</span></h2>
     <table class="probes" id="probesA"><thead><tr><th>Station</th><th>Lite</th><th style="text-align:right">Inboard</th><th style="text-align:right">Reading</th><th style="text-align:right">vs model</th></tr></thead><tbody></tbody></table>
   </div>
 </section>
 
 <section class="grid g2 wall">
   <div class="panel">
-    <h2>LuxWall <span class="tag">lab · camera "LuxWall"</span></h2>
+    <h2>LuxWall <span class="tag">house · one frame, six lites</span></h2>
     <div class="stagewrap"><canvas id="stageB" class="stage"></canvas><div class="tscale" id="tscaleB" hidden><span class="mx">--</span><i></i><span class="mn">--</span><em>SIMULATED · ε 0.95</em></div>
-      <div class="ov"><b>LUXWALL</b>Kevin numbers six lites, L1 to L6<br>model shows three openings, 36 × 80 in assumed<br>layout to confirm</div></div>
+      <div class="ov"><b>LUXWALL</b>six lites in one frame, L1 to L6<br>lower 44 × 86 in, upper 44 × 48 in assumed<br>numbering assumed: L1 to L3 lower, L4 to L6 upper</div></div>
   </div>
   <div class="panel">
-    <h2>LuxWall probes <span class="tag">13 on three openings · Kevin numbers six lites, L1 to L6 · layout to confirm</span></h2>
+    <h2>LuxWall probes <span class="tag">20 · six lites · numbering on the frame to confirm</span></h2>
     <table class="probes" id="probesB"><thead><tr><th>Station</th><th>Lite</th><th style="text-align:right">Inboard</th><th style="text-align:right">Reading</th><th style="text-align:right">vs model</th></tr></thead><tbody></tbody></table>
-    <p class="delta" style="margin:10px 0 0">Per Kevin, 6 October: centre of glass inside and out, edge of glass inside, on every lite, plus two interior and two exterior air thermocouples per wall. Loggers sample every 15 minutes. Channel by channel placement still to be confirmed.</p>
+    <p class="delta" style="margin:10px 0 0">Channels as Kevin named them in SiteView, 16 October: centre of glass inside, edge of glass inside and centre of glass outside on each lite, plus one inside and one outside air thermocouple per wall. Rows marked live are real readings. The rest show the model until their channel is named or its probe reads sensibly.</p>
   </div>
 </section>
 
@@ -207,7 +207,7 @@ input[type=range]{accent-color:var(--amber);width:120px}
   </div>
 </section>
 
-<p class="foot"><b>How the simulation works.</b> Weather is real: Open-Meteo at the lab's own coordinates and elevation, 1,204 ft, refreshed every 10 minutes and seven days back, plus the same model at Fairbanks Intl and the live airport observation for the valley reference. Probe readings are simulated until the lab bridge writes latest.json, then the table shows the live value with a green mark and the model line stays for comparison. Each station takes the fraction of the room-to-outdoor temperature difference that the N50 THERM model dropped at that point on 17 August (<code>−60 F</code> outside, <code>21 C</code> inside), and applies it to the outdoor temperature right now, plus a little sensor noise. The 24 hour history is built the same way from the last day of weather. The window banks are a Blender model. The Vitro Wall is three 44 by 86 inch units under three transoms, scaled off the door in the camera frame. The LuxWall openings are assumed at 36 by 80 inches. Every lite carries three Type T thermocouples, centre inside, centre outside, edge inside, and each wall has two interior and two exterior air thermocouples. The loggers are Microedge PRECISE-LOG PL-TW, eight channels each, Modbus TCP on the lab network. The logger make, channel count, and the rest of the schedule are open questions to Kevin. The glass is always painted from the THERM model, edge coldest, and the all surfaces view extends that to frame and wall, so it is a prediction drawn as a camera frame, not a measurement. The camera panel is an empty slot until the UniFi feed is connected. When Kevin's loggers stream, these panels take the real numbers and the model line stays as the thing to beat.</p>
+<p class="foot"><b>How the simulation works.</b> Weather is real: Open-Meteo at the lab's own coordinates and elevation, 1,204 ft, refreshed every 10 minutes and seven days back, plus the same model at Fairbanks Intl and the live airport observation for the valley reference. Probe readings are simulated until the lab bridge writes latest.json, then the table shows the live value with a green mark and the model line stays for comparison. Each station takes the fraction of the room-to-outdoor temperature difference that the N50 THERM model dropped at that point on 17 August (<code>−60 F</code> outside, <code>21 C</code> inside), and applies it to the outdoor temperature right now, plus a little sensor noise. The 24 hour history is built the same way from the last day of weather. The window banks are a Blender model. The Vitro Wall is three openings in the lab, assumed at 36 by 80 inches. The LuxWall is one frame in the house, three lites across and two high, lower 44 by 86 inches and upper 44 by 48 inches, scaled off the door in the camera frame. Every lite carries three Type T thermocouples, centre inside, centre outside, edge inside, and each wall has one interior and one exterior air thermocouple. The loggers are Microedge PRECISE-LOG PL-TW, eight channels each, Modbus TCP on the lab network. The logger make, channel count, and the rest of the schedule are open questions to Kevin. The glass is always painted from the THERM model, edge coldest, and the all surfaces view extends that to frame and wall, so it is a prediction drawn as a camera frame, not a measurement. The camera panel is an empty slot until the UniFi feed is connected. When Kevin's loggers stream, these panels take the real numbers and the model line stays as the thing to beat.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -241,8 +241,6 @@ const PROBES = [
   {bank:"A", id:"V3 ei", mesh:"N50_A_P_V3_ei", lite:"V3 · VIG out", mm:35, face:"in", note:"edge of glass, interior", kind:"glass"},
   {bank:"A", id:"air in 1", mesh:"N50_A_P_air_in1", lite:"room", mm:0, face:"in", note:"interior ambient air", kind:"air"},
   {bank:"A", id:"air out 1", mesh:"N50_A_P_air_out1", lite:"outside", mm:0, face:"out", note:"exterior ambient air", kind:"air"},
-  {bank:"A", id:"air in 2", mesh:"N50_A_P_air_in2", lite:"room", mm:0, face:"in", note:"interior ambient air", kind:"air"},
-  {bank:"A", id:"air out 2", mesh:"N50_A_P_air_out2", lite:"outside", mm:0, face:"out", note:"exterior ambient air", kind:"air"},
   {bank:"B", id:"L1 ci", mesh:"N50_B_P_L1_ci", lite:"L1", mm:150, face:"in", note:"centre of glass, interior", kind:"glass"},
   {bank:"B", id:"L1 ce", mesh:"N50_B_P_L1_ce", lite:"L1", mm:150, face:"out", note:"centre of glass, exterior", kind:"glass"},
   {bank:"B", id:"L1 ei", mesh:"N50_B_P_L1_ei", lite:"L1", mm:35, face:"in", note:"edge of glass, interior", kind:"glass"},
@@ -252,10 +250,17 @@ const PROBES = [
   {bank:"B", id:"L3 ci", mesh:"N50_B_P_L3_ci", lite:"L3", mm:150, face:"in", note:"centre of glass, interior", kind:"glass"},
   {bank:"B", id:"L3 ce", mesh:"N50_B_P_L3_ce", lite:"L3", mm:150, face:"out", note:"centre of glass, exterior", kind:"glass"},
   {bank:"B", id:"L3 ei", mesh:"N50_B_P_L3_ei", lite:"L3", mm:35, face:"in", note:"edge of glass, interior", kind:"glass"},
+  {bank:"B", id:"L4 ci", mesh:"N50_B_P_L4_ci", lite:"L4", mm:150, face:"in", note:"centre of glass, interior", kind:"glass"},
+  {bank:"B", id:"L4 ce", mesh:"N50_B_P_L4_ce", lite:"L4", mm:150, face:"out", note:"centre of glass, exterior", kind:"glass"},
+  {bank:"B", id:"L4 ei", mesh:"N50_B_P_L4_ei", lite:"L4", mm:35, face:"in", note:"edge of glass, interior", kind:"glass"},
+  {bank:"B", id:"L5 ci", mesh:"N50_B_P_L5_ci", lite:"L5", mm:150, face:"in", note:"centre of glass, interior", kind:"glass"},
+  {bank:"B", id:"L5 ce", mesh:"N50_B_P_L5_ce", lite:"L5", mm:150, face:"out", note:"centre of glass, exterior", kind:"glass"},
+  {bank:"B", id:"L5 ei", mesh:"N50_B_P_L5_ei", lite:"L5", mm:35, face:"in", note:"edge of glass, interior", kind:"glass"},
+  {bank:"B", id:"L6 ci", mesh:"N50_B_P_L6_ci", lite:"L6", mm:150, face:"in", note:"centre of glass, interior", kind:"glass"},
+  {bank:"B", id:"L6 ce", mesh:"N50_B_P_L6_ce", lite:"L6", mm:150, face:"out", note:"centre of glass, exterior", kind:"glass"},
+  {bank:"B", id:"L6 ei", mesh:"N50_B_P_L6_ei", lite:"L6", mm:35, face:"in", note:"edge of glass, interior", kind:"glass"},
   {bank:"B", id:"air in 1", mesh:"N50_B_P_air_in1", lite:"room", mm:0, face:"in", note:"interior ambient air", kind:"air"},
   {bank:"B", id:"air out 1", mesh:"N50_B_P_air_out1", lite:"outside", mm:0, face:"out", note:"exterior ambient air", kind:"air"},
-  {bank:"B", id:"air in 2", mesh:"N50_B_P_air_in2", lite:"room", mm:0, face:"in", note:"interior ambient air", kind:"air"},
-  {bank:"B", id:"air out 2", mesh:"N50_B_P_air_out2", lite:"outside", mm:0, face:"out", note:"exterior ambient air", kind:"air"},
 ];
 const noise = PROBES.map(()=>({v:0}));
 function tick(dt){ noise.forEach(n=>{ n.v = n.v*0.96 + (Math.random()-0.5)*0.12; }); }
@@ -272,7 +277,7 @@ async function fetchLive(){
 function readings(tin,tout){
   return PROBES.map((p,i)=> ({...p, t: (p.kind==="air" ? (p.face==="out"?tout:tin) : p.face==="out" ? extSurf(tin,tout,p.mm) : surf(p.mm,tin,tout)) + noise[i].v,
                                model: p.kind==="air" ? (p.face==="out"?tout:tin) : p.face==="out" ? extSurf(tin,tout,p.mm) : surf(p.mm,tin,tout)}))
-    .map(r=>{ const lv=LIVE&&LIVE.probes&&LIVE.probes[r.id]; return (lv&&lv.value_f!=null) ? {...r, t:lv.value_f, live:true} : r; });
+    .map(r=>{ const lv=LIVE&&LIVE.probes&&(LIVE.probes[r.bank+":"+r.id]||LIVE.probes[r.id]); return (lv&&lv.value_f!=null) ? {...r, t:lv.value_f, live:true} : r; });
 }
 
 // ---------- state ----------
@@ -428,7 +433,7 @@ ${L}
 
 // ---------- 3D walls, Blender model, one viewer per wall ----------
 const viewers={};
-const BANKS = { A:{center:[0,2.3,0], dist:7.6}, B:{center:[9,1.7,0], dist:7.2} };
+const BANKS = { A:{center:[0,1.7,0], dist:7.2}, B:{center:[9,2.3,0], dist:7.6} };
 function initViewer(bank){
   if(!window.THREE || !THREE.GLTFLoader) return;
   const cv=$("stage"+bank); const W=cv.clientWidth,H=cv.clientHeight;
