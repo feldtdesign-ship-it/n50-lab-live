@@ -4,7 +4,7 @@ name: Lab data from SiteView
 # latest.json to the lab-data branch, which the page reads. Nothing runs at the lab.
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "4,19,34,49 * * * *"
   workflow_dispatch:
 
 permissions:
