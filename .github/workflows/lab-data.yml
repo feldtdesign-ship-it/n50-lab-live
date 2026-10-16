@@ -1,7 +1,9 @@
 name: Lab data from SiteView
 
-# Every 15 minutes: read the lab loggers from SiteView-Web's live feed and post
-# latest.json to the lab-data branch, which the page reads. Nothing runs at the lab.
+# Keeps the lab page live. Each run uploads fresh readings every 15 minutes for
+# about 5 hours 40 minutes, then starts its own replacement, so it runs around the
+# clock on GitHub with nothing else needed. The schedule below is only a backup
+# that restarts the chain if it ever stops. Nothing runs at the lab or on a Mac.
 on:
   schedule:
     - cron: "4,19,34,49 * * * *"
@@ -9,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: lab-data
@@ -17,11 +20,22 @@ concurrency:
 jobs:
   upload:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 355
     steps:
       - uses: actions/checkout@v4
       - run: python3 -m pip install --quiet requests
-      - run: python3 bridge/siteview_lab.py --upload
+      - name: Upload every 15 minutes
         env:
           N50_SV_URL: ${{ secrets.N50_SV_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          end=$((SECONDS + 340*60))
+          while [ $SECONDS -lt $end ]; do
+            python3 bridge/siteview_lab.py --upload || echo "upload failed, trying again next round"
+            sleep 840
+          done
+      - name: Start the next run
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run lab-data.yml --ref main --repo "$GITHUB_REPOSITORY"
