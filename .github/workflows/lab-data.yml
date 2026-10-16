@@ -1,0 +1,27 @@
+name: Lab data from SiteView
+
+# Every 15 minutes: read the lab loggers from SiteView-Web's live feed and post
+# latest.json to the lab-data branch, which the page reads. Nothing runs at the lab.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lab-data
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install --quiet requests
+      - run: python3 bridge/siteview_lab.py --upload
+        env:
+          N50_SV_URL: ${{ secrets.N50_SV_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
