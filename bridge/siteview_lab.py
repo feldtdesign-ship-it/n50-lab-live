@@ -28,14 +28,14 @@ LISTEN_S = 150         # SiteView pushes about once a minute
 
 # Logger serial -> channel -> page probe, from Kevin's SiteView channel names of 2026-10-16.
 # Channel 0 on every logger is its built-in sensor and is skipped. Air probes carry the wall
-# letter (A Vitro, B LuxWall) so they land on the right wall. Box 5 channels 1 to 4 are still
-# unnamed in SiteView and are left out until Kevin names them.
+# letter (A Vitro, B LuxWall) so they land on the right wall.
 WALLS = {
     "060300603213": {1: "V1 ce", 2: "V2 ce", 3: "A:air out 1", 4: "A:air in 1", 5: "V1 ci", 6: "V1 ei"},
     "060300603312": {1: "V3 ce", 2: "V2 ci", 3: "V2 ei", 4: "V3 ci", 5: "V3 ei"},
     "060300603214": {1: "L5 ci", 2: "L5 ei", 3: "L4 ci", 4: "L4 ei", 5: "L1 ci", 6: "L1 ei", 7: "L2 ci", 8: "B:air in 1"},
     "060300603316": {1: "L3 ci", 2: "L3 ei", 3: "L6 ci", 4: "L6 ei", 5: "L2 ei"},
-    "060300603315": {5: "L5 ce", 6: "L6 ce", 7: "B:air out 1"},
+    # ch1 to ch4 unnamed in SiteView as of 16 Oct; they read like outside glass and follow ch5 = L5, ch6 = L6. Assumed L1 to L4.
+    "060300603315": {1: "L1 ce", 2: "L2 ce", 3: "L3 ce", 4: "L4 ce", 5: "L5 ce", 6: "L6 ce", 7: "B:air out 1"},
 }
 NAMES = {"060300603213": "#1", "060300603312": "#2", "060300603214": "#3", "060300603316": "#4", "060300603315": "5"}
 
