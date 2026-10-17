@@ -28,7 +28,7 @@ LISTEN_S = 150         # SiteView pushes about once a minute
 
 # Logger serial -> channel -> page probe, from Kevin's SiteView channel names, all 31 confirmed 2026-10-16.
 # Channel 0 on every logger is its built-in sensor and is skipped. Air probes carry the wall
-# letter (A Vitro, B LuxWall) so they land on the right wall.
+# letter (A for V Wall, B for L Wall) so they land on the right wall.
 WALLS = {
     "060300603213": {1: "V1 ce", 2: "V2 ce", 3: "A:air out 1", 4: "A:air in 1", 5: "V1 ci", 6: "V1 ei"},
     "060300603312": {1: "V3 ce", 2: "V2 ci", 3: "V2 ei", 4: "V3 ci", 5: "V3 ei"},

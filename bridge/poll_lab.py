@@ -4,8 +4,8 @@ N50 Lab bridge. Runs on the always-on lab PC, on the same network as the loggers
 
 Every run it:
   1. downloads bridge/lab.json (names and scale set from New York) as plain data, checked, never run,
-  2. reads each PRECISE-LOG PL-TW over Modbus TCP (read input registers only, nothing is ever written),
-  3. reads the Davis WeatherLink Live local API if one is set,
+  2. reads each thermocouple logger over Modbus TCP (read input registers only, nothing is ever written),
+  3. reads the weather station local API if one is set,
   4. writes latest.json and appends to log.csv in the data folder (C:/N50/lab-data on the lab PC),
   5. pushes the data folder to the repo's lab-data branch, which holds data only.
 
@@ -146,7 +146,7 @@ def read_logger(box):
     return {ch: c_to_f(to_c(regs[ch])) for ch in range(1, 9) if ch < len(regs)}
 
 def read_weatherlink():
-    """Davis WeatherLink Live local API on the LAN: http://<ip>/v1/current_conditions"""
+    """Weather station local API on the LAN: http://<ip>/v1/current_conditions"""
     wl = CFG.get("weatherlink_ip")
     if not wl: return None
     try:

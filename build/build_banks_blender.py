@@ -1,14 +1,11 @@
 # N50 lab window banks, Blender 5. Standalone: run headless with
 #   /Applications/Blender.app/Contents/MacOS/Blender --background --python build_banks_blender.py -- /path/out.glb
-# or paste into Blender's console with the MCP addon on. Metres.
-# Corrected 2026-10-16: the two walls were swapped. Kevin, 6 Oct: "LuxWall is named with numbers on the frame. L1 to L6",
-#   "Vitro goes from left to right V1 to V3".
-# Bank A, Vitro Wall: the lab wall with three openings in drywall, 36 x 80 in assumed.
-#   V1 VIG in, V2 no second layer, V3 VIG out, left to right.
-# Bank B, LuxWall: the house wall, one frame, three lites across and two high. Lower 44 x 86 in, upper 44 x 48 in,
-#   scaled off the 36 x 80 in door. Numbering assumed: L1 to L3 lower row, L4 to L6 upper row, left to right. To confirm.
-# Probes per Kevin's SiteView channel names, 16 Oct 2026: centre of glass interior, centre of glass exterior,
-#   edge of glass interior, per lite. One interior and one exterior ambient air thermocouple per wall.
+# Metres.
+# Bank A, V Wall: three openings in drywall, 36 x 80 in assumed. V1 to V3 left to right.
+# Bank B, L Wall: one frame, three lites across and two high. Lower 44 x 86 in, upper 44 x 48 in,
+#   scaled off the 36 x 80 in door. Numbering assumed: L1 to L3 lower row, L4 to L6 upper row.
+# Probes per lite: centre of glass interior, centre of glass exterior, edge of glass interior.
+#   One interior and one exterior ambient air thermocouple per wall.
 import bpy, sys, os
 from mathutils import Vector
 IN = 0.0254
@@ -66,8 +63,8 @@ fw, D = 0.07, 0.30
 yI, yX = -0.015, 0.015
 e = 0.035   # edge probe, 35 mm in from the sight line
 
-# ---------- Bank A, Vitro Wall (lab, three openings) ----------
-A = empty("N50_BankA_VitroWall", (0, 0, 0))
+# ---------- Bank A, V Wall (three openings) ----------
+A = empty("N50_BankA_VWall", (0, 0, 0))
 ow, oh, osill = 36 * IN, 80 * IN, 0.70; ops = [-2.0, 0.0, 2.0]
 piers = [(-3.3, ops[0] - ow / 2 - fw), (ops[0] + ow / 2 + fw, ops[1] - ow / 2 - fw), (ops[1] + ow / 2 + fw, ops[2] - ow / 2 - fw), (ops[2] + ow / 2 + fw, 3.3)]
 for i, (a, b) in enumerate(piers): box(f"N50_A_pier_{i}", (b - a, D, oh + 2 * fw), ((a + b) / 2, 0, osill + oh / 2), M_WALL, A)
@@ -88,8 +85,8 @@ for i, x in enumerate(ops):
 probe("N50_A_P_air_in1", (-1.0, -0.45, osill + oh - 0.2), A, lead_to_z=osill + oh + 0.3, r=0.025)
 probe("N50_A_P_air_out1", (-1.0, 0.45, osill + oh - 0.2), A, ext=True, lead_to_z=osill + oh + 0.3, r=0.025)
 
-# ---------- Bank B, LuxWall (house, one frame, six lites) ----------
-B = empty("N50_BankB_LuxWall", (9.0, 0.0, 0.0))
+# ---------- Bank B, L Wall (one frame, six lites) ----------
+B = empty("N50_BankB_LWall", (9.0, 0.0, 0.0))
 uw, uh, th = 44 * IN, 86 * IN, 48 * IN; sill = 0.50
 cols = [-(uw + fw), 0.0, (uw + fw)]
 z_low = sill + uh / 2; z_hi = sill + uh + fw + th / 2; head = sill + uh + fw + th

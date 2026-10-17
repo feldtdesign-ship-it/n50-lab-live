@@ -4,7 +4,7 @@
 
 **Setting up the lab PC? Follow [SETUP_THOR.md](../SETUP_THOR.md).** One pasted line runs `setup.ps1`, which does everything below.
 
-`poll_lab.py` runs on the always-on lab PC every 15 minutes. It reads the PRECISE-LOG PL-TW loggers over Modbus TCP and the Davis WeatherLink Live if set, writes `latest.json` and `log.csv`, and pushes them to the **`lab-data` branch**, which holds data only. The page reads `latest.json` from that branch. Nothing at the lab is exposed to the internet: the PC only sends out, so no DDNS and no port forwarding.
+`poll_lab.py` runs on the always-on lab PC every 15 minutes. It reads the thermocouple loggers over Modbus TCP and a weather station if set, writes `latest.json` and `log.csv`, and pushes them to the **`lab-data` branch**, which holds data only. The page reads `latest.json` from that branch. Nothing at the lab is exposed to the internet: the PC only sends out, so no DDNS and no port forwarding.
 
 ## Safety on a PC we don't own
 
