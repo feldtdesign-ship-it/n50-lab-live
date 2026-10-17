@@ -103,16 +103,42 @@ def github_token():
     if os.environ.get("GITHUB_TOKEN"): return os.environ["GITHUB_TOKEN"]
     return subprocess.run(["gh", "auth", "token"], capture_output=True, text=True).stdout.strip()
 
-def upload(doc):
-    h = {"Authorization": "Bearer " + github_token(), "Accept": "application/vnd.github+json"}
-    api = "https://api.github.com/repos/%s/contents/latest.json" % REPO
+def gh_put(path, data, message, h):
+    api = "https://api.github.com/repos/%s/contents/%s" % (REPO, path)
     cur = requests.get(api, params={"ref": BRANCH}, headers=h, timeout=20)
-    body = {"message": "lab data " + doc["time_utc"], "branch": BRANCH,
-            "content": base64.b64encode(json.dumps(doc, indent=1).encode()).decode()}
+    body = {"message": message, "branch": BRANCH,
+            "content": base64.b64encode(data.encode()).decode()}
     if cur.status_code == 200: body["sha"] = cur.json()["sha"]
     r = requests.put(api, json=body, headers=h, timeout=30)
     r.raise_for_status()
+
+HISTORY_DAYS = 7
+
+def add_history(doc, h):
+    """history.json on the lab-data branch: one compact row per run, last 7 days, for the page's graph."""
+    url = "https://raw.githubusercontent.com/%s/%s/history.json" % (REPO, BRANCH)
+    rows = []
+    try:
+        api = "https://api.github.com/repos/%s/contents/history.json" % REPO
+        r = requests.get(api, params={"ref": BRANCH}, headers=h, timeout=20)
+        if r.status_code == 200: rows = json.loads(base64.b64decode(r.json()["content"]))["rows"]
+    except Exception as e:
+        print("history read failed, starting fresh:", type(e).__name__)
+    row = {"t": doc["time_utc"], "p": {k: v["value_f"] for k, v in doc["probes"].items() if v["value_f"] is not None}}
+    rows = [x for x in rows if x["t"] != row["t"]] + [row]
+    cutoff = datetime.now(timezone.utc).timestamp() - HISTORY_DAYS * 86400
+    rows = [x for x in rows if datetime.fromisoformat(x["t"]).timestamp() >= cutoff]
+    gh_put("history.json", json.dumps({"days": HISTORY_DAYS, "rows": rows}, separators=(",", ":")),
+           "history " + doc["time_utc"], h)
+
+def upload(doc):
+    h = {"Authorization": "Bearer " + github_token(), "Accept": "application/vnd.github+json"}
+    gh_put("latest.json", json.dumps(doc, indent=1), "lab data " + doc["time_utc"], h)
     print("uploaded to", BRANCH)
+    try:
+        add_history(doc, h); print("history updated")
+    except Exception as e:
+        print("history update failed:", e)
 
 def main():
     got = listen()
