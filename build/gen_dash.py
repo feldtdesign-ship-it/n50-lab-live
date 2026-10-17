@@ -145,7 +145,7 @@ input[type=range]{accent-color:var(--amber);width:120px}
   <div class="panel">
     <h2>L Wall <span class="tag">six lites in one frame · L1 to L6</span></h2>
     <div class="stagewrap"><canvas id="stageB" class="stage"></canvas><div class="tscale" id="tscaleB" hidden><span class="mx">--</span><i></i><span class="mn">--</span><em>SIMULATED · ε 0.95</em></div>
-      <div class="ov"><b>L WALL</b>six lites in one frame, L1 to L6<br>lower 44 × 86 in, upper 44 × 48 in assumed<br>numbering assumed: L1 to L3 lower, L4 to L6 upper</div></div>
+      <div class="ov"><b>L WALL</b>six lites in one frame, L1 to L6<br>lower 44 × 86 in, upper 44 × 48 in assumed<br>top L3 L2 L1 · bottom L6 L5 L4, from inside</div></div>
   </div>
   <div class="panel">
     <h2>L Wall probes <span class="tag">20 probes</span></h2>

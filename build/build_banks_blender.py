@@ -3,7 +3,7 @@
 # Metres.
 # Bank A, V Wall: three openings in drywall, 36 x 80 in assumed. V1 to V3 left to right.
 # Bank B, L Wall: one frame, three lites across and two high. Lower 44 x 86 in, upper 44 x 48 in,
-#   scaled off the 36 x 80 in door. Numbering assumed: L1 to L3 lower row, L4 to L6 upper row.
+#   scaled off the 36 x 80 in door. Numbered right to left from inside: top row L3 L2 L1, bottom row L6 L5 L4 (confirmed 17 Oct).
 # Probes per lite: centre of glass interior, centre of glass exterior, edge of glass interior.
 #   One interior and one exterior ambient air thermocouple per wall.
 import bpy, sys, os
@@ -93,16 +93,17 @@ z_low = sill + uh / 2; z_hi = sill + uh + fw + th / 2; head = sill + uh + fw + t
 ox0, ox1 = -(1.5 * uw + 2 * fw), (1.5 * uw + 2 * fw); oz0, oz1 = sill - fw, head + fw
 wall_around("N50_B_wall", M_CLAD, B, ox0 - 1.0, ox1 + 1.0, 0.0, oz1 + 0.5, ox0, ox1, oz0, oz1, D)
 for i, x in enumerate(cols):
-    box(f"N50_B_glass_{i+1}", (uw, 0.02, uh), (x, 0.0, z_low), M_GLASS, B)
-    box(f"N50_B_glass_{i+4}", (uw, 0.02, th), (x, 0.0, z_hi), M_GLASS, B)
+    box(f"N50_B_glass_{6-i}", (uw, 0.02, uh), (x, 0.0, z_low), M_GLASS, B)   # bottom row, large: L6 L5 L4
+    box(f"N50_B_glass_{3-i}", (uw, 0.02, th), (x, 0.0, z_hi), M_GLASS, B)    # top row, small: L3 L2 L1
 for i, x in enumerate([-1.5 * uw - 1.5 * fw, -0.5 * uw - 0.5 * fw, 0.5 * uw + 0.5 * fw, 1.5 * uw + 1.5 * fw]):
     box(f"N50_B_mull_{i}", (fw, D, head - sill + 2 * fw), (x, 0.0, (sill + head) / 2), M_FRAME, B)
 box("N50_B_transom_bar", (3 * uw + 4 * fw, D, fw), (0, 0.0, sill + uh + fw / 2), M_FRAME, B)
 box("N50_B_head", (3 * uw + 4 * fw, D, fw), (0, 0.0, head + fw / 2), M_FRAME, B)
 box("N50_B_sill", (3 * uw + 4 * fw, D, fw), (0, 0.0, sill - fw / 2), M_FRAME, B)
-for row, (zc, top, n0) in enumerate([(sill + uh * 0.5, sill + uh, 1), (z_hi, head, 4)]):
+# Numbered right to left as seen from inside: top L3 L2 L1, bottom L6 L5 L4 (Michael, 17 Oct).
+for row, (zc, top, n0) in enumerate([(sill + uh * 0.5, sill + uh, 6), (z_hi, head, 3)]):
     for i, x in enumerate(cols):
-        n = n0 + i
+        n = n0 - i
         probe(f"N50_B_P_L{n}_ci", (x, yI, zc), B, lead_to_z=top)
         probe(f"N50_B_P_L{n}_ce", (x, yX, zc), B, ext=True, lead_to_z=top)
         xe = x + uw / 2 - e if i < 2 else x - uw / 2 + e
