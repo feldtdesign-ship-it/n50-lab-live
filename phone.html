@@ -33,7 +33,8 @@ header img{width:118px;display:block}
 .big .v{font-stretch:66%;font-weight:800;font-size:72px;line-height:.95;color:var(--amber)}.big .v small{font-size:24px;font-weight:600;margin-left:2px}
 .big .s{font-size:13px;color:#C9D3DD;margin-top:4px}
 svg{display:block;width:100%;height:auto}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}
+.vnote{font-size:12px;line-height:1.5;color:var(--slate);margin:12px 2px 0}.vnote b{color:var(--cream)}
 .st{background:var(--panel2);border-radius:8px;padding:10px 10px 9px}
 .st .k{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.1em;color:var(--slate);line-height:1.3}
 .st .v{font-stretch:75%;font-weight:700;font-size:26px;margin-top:4px}.st .v small{font-size:13px;font-weight:500;margin-left:2px}
@@ -54,7 +55,7 @@ a.full{display:block;text-align:center;margin:18px 0 0;padding:13px;border:1px s
 <section class="wall" id="wallB"></section>
 <section class="chart"><h3 id="chT">THE LAST 24 HOURS</h3><div id="chart"></div>
 <div class="legend"><span><i style="background:var(--ice)"></i>Outside air</span><span><i style="background:var(--amber)"></i>V Series glass</span><span><i style="background:var(--cream)"></i>L Series glass</span><span><i style="background:var(--slate)"></i>Room air</span></div></section>
-<p class="note">Glass temperatures are the inside face, centre of each lite, averaged. Frost margin is the coldest edge of glass against the room dew point, assuming 40 percent indoor humidity. Readings arrive every 15 minutes from the loggers at the lab.</p>
+<p class="note">Glass temperatures are the inside face, centre of each lite, averaged. Readings arrive every 15 minutes from the loggers at the lab.</p>
 <a class="full" href="./">FULL LAB DASHBOARD &rarr;</a>
 </div>
 <script>
@@ -79,13 +80,12 @@ function thermoBar(s){const lo=Math.min(s.out,s.glass)-2,hi=Math.max(s.room,s.gl
   <circle cx="${X(s.out)}" cy="17" r="5" fill="#06101B" stroke="#9FD9E8" stroke-width="2"/><circle cx="${X(s.room)}" cy="17" r="5" fill="#06101B" stroke="#7F93A6" stroke-width="2"/>
   <path d="M${X(s.glass)} 6 l6 -6 h-12z" fill="#EBB540"/><rect x="${X(s.glass)-1.5}" y="6" width="3" height="22" fill="#EBB540"/></svg>`}
 function renderWall(w,P){const s=wallStats(P,w),el=$("wall"+w);if(s.glass==null){el.innerHTML="";return}
-  const dp=dew(s.room,40),margin=s.edge-dp,diff=s.room-s.out;
+  const diff=s.room-s.out;
   el.innerHTML=`<div class="wh"><h2>${WALLS[w].name}</h2><span>${WALLS[w].tag}</span></div>
   <div class="hero"><div class="big"><div class="k">INSIDE GLASS</div><div class="v">${f1(s.glass)}<small>F</small></div><div class="s">${f1(s.glass-s.out)} F warmer than outside</div></div>${windows(w,s)}</div>
   <div class="bar">${thermoBar(s)}<div class="lbl"><span>OUTSIDE ${f1(s.out)}</span><span style="color:var(--amber)">GLASS ${f1(s.glass)}</span><span>ROOM ${f1(s.room)}</span></div></div>
   <div class="stats"><div class="st"><div class="k">COLDEST<br>EDGE</div><div class="v">${f1(s.edge)}<small>F</small></div></div>
-  <div class="st"><div class="k">ROOM TO<br>OUTSIDE</div><div class="v">${f1(diff)}<small>F</small></div></div>
-  <div class="st"><div class="k">FROST<br>MARGIN</div><div class="v" style="color:${margin>10?"#7FD6A0":margin>4?"#EBB540":"#E8613C"}">${f1(margin)}<small>F</small></div></div></div>`}
+  <div class="st"><div class="k">ROOM TO<br>OUTSIDE</div><div class="v">${f1(diff)}<small>F</small></div></div></div>${w==="A"?`<p class="vnote"><b>V1</b> vacuum space toward the interior. <b>V3</b> vacuum space toward the exterior. <b>V2</b> has no third layer.<br>V2 is installed counter to manufacturer guidance as a control to V1 and V3.</p>`:""}`}
 function chart(rows){const now=Date.now(),from=now-24*3600e3;let R=rows.filter(r=>new Date(r.t)>=from);if(R.length<2)R=rows.slice(-96);
   $("chT").textContent=(R.length&&new Date(R[0].t)<now-20*3600e3)?"THE LAST 24 HOURS":"SINCE READINGS BEGAN";
   const ser=[["#9FD9E8",p=>avg([p["A:air out 1"],p["B:air out 1"]])],["#EBB540",p=>avg(WALLS.A.lites.map(l=>p[l+" ci"]))],["#F5F2EA",p=>avg(WALLS.B.lites.map(l=>p[l+" ci"]))],["#7F93A6",p=>avg([p["A:air in 1"],p["B:air in 1"]])]];
