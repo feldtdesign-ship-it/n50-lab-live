@@ -85,7 +85,7 @@ function renderWall(w,P){const s=wallStats(P,w),el=$("wall"+w);if(s.glass==null)
   <div class="hero"><div class="big"><div class="k">INSIDE GLASS</div><div class="v">${f1(s.glass)}<small>F</small></div><div class="s">${f1(s.glass-s.out)} F warmer than outside</div></div>${windows(w,s)}</div>
   <div class="bar">${thermoBar(s)}<div class="lbl"><span>OUTSIDE ${f1(s.out)}</span><span style="color:var(--amber)">GLASS ${f1(s.glass)}</span><span>ROOM ${f1(s.room)}</span></div></div>
   <div class="stats"><div class="st"><div class="k">COLDEST<br>EDGE</div><div class="v">${f1(s.edge)}<small>F</small></div></div>
-  <div class="st"><div class="k">ROOM TO<br>OUTSIDE</div><div class="v">${f1(diff)}<small>F</small></div></div></div>${w==="A"?`<p class="vnote"><b>V1</b> vacuum space toward the interior. <b>V3</b> vacuum space toward the exterior. <b>V2</b> has no third layer.<br>V2 is installed counter to manufacturer guidance as a control to V1 and V3.</p>`:""}`}
+  <div class="st"><div class="k">ROOM TO<br>OUTSIDE</div><div class="v">${f1(diff)}<small>F</small></div></div></div>${w==="A"?`<p class="vnote">V2 is installed counter to manufacturer guidance as a control to V1 and V3.</p>`:""}`}
 function chart(rows){const now=Date.now(),from=now-24*3600e3;let R=rows.filter(r=>new Date(r.t)>=from);if(R.length<2)R=rows.slice(-96);
   $("chT").textContent=(R.length&&new Date(R[0].t)<now-20*3600e3)?"THE LAST 24 HOURS":"SINCE READINGS BEGAN";
   const ser=[["#9FD9E8",p=>avg([p["A:air out 1"],p["B:air out 1"]])],["#EBB540",p=>avg(WALLS.A.lites.map(l=>p[l+" ci"]))],["#F5F2EA",p=>avg(WALLS.B.lites.map(l=>p[l+" ci"]))],["#7F93A6",p=>avg([p["A:air in 1"],p["B:air in 1"]])]];
