@@ -53,13 +53,13 @@ a.full{display:block;text-align:center;margin:18px 0 0;padding:13px;border:1px s
 <section class="wall" id="wallA"></section>
 <section class="wall" id="wallB"></section>
 <section class="chart"><h3 id="chT">THE LAST 24 HOURS</h3><div id="chart"></div>
-<div class="legend"><span><i style="background:var(--ice)"></i>Outside air</span><span><i style="background:var(--amber)"></i>V Wall glass</span><span><i style="background:var(--cream)"></i>L Wall glass</span><span><i style="background:var(--slate)"></i>Room air</span></div></section>
+<div class="legend"><span><i style="background:var(--ice)"></i>Outside air</span><span><i style="background:var(--amber)"></i>V Series glass</span><span><i style="background:var(--cream)"></i>L Series glass</span><span><i style="background:var(--slate)"></i>Room air</span></div></section>
 <p class="note">Glass temperatures are the inside face, centre of each lite, averaged. Frost margin is the coldest edge of glass against the room dew point, assuming 40 percent indoor humidity. Readings arrive every 15 minutes from the loggers at the lab.</p>
 <a class="full" href="./">FULL LAB DASHBOARD &rarr;</a>
 </div>
 <script>
 const SRC="https://raw.githubusercontent.com/feldtdesign-ship-it/n50-lab-live/lab-data/";
-const WALLS={A:{name:"V Wall",tag:"3 LITES",lites:["V1","V2","V3"]},B:{name:"L Wall",tag:"6 LITES · ONE FRAME",lites:["L1","L2","L3","L4","L5","L6"]}};
+const WALLS={A:{name:"V Series",tag:"3 LITES",lites:["V1","V2","V3"]},B:{name:"L Series",tag:"6 LITES · ONE FRAME",lites:["L1","L2","L3","L4","L5","L6"]}};
 const $=id=>document.getElementById(id);
 const f1=v=>v==null?"--":v.toFixed(1);
 const avg=a=>{a=a.filter(v=>v!=null);return a.length?a.reduce((s,v)=>s+v,0)/a.length:null};
