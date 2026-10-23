@@ -37,9 +37,10 @@ header img{height:26px;width:auto}
 @media (prefers-reduced-motion:reduce){.pill.live::before{animation:none}}
 .grid{display:grid;gap:14px;margin-top:14px}
 .g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .g2{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
 .g2b{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-@media (max-width:900px){.g5{grid-template-columns:repeat(2,minmax(0,1fr))}.g2,.g2b{grid-template-columns:1fr}}
+@media (max-width:900px){.g4,.g5{grid-template-columns:repeat(2,minmax(0,1fr))}.g2,.g2b{grid-template-columns:1fr}}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px 16px;min-width:0}
 .panel h2{margin:0 0 10px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:600;display:flex;align-items:center;gap:10px}
 .panel h2 .tag{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--dim);text-transform:none}
@@ -100,37 +101,34 @@ input[type=range]{accent-color:var(--amber);width:120px}
 <header>
   <img src="__MARK__" alt="N50">
   <div class="hd-title"><b>North 50 Lab</b> &nbsp;·&nbsp; Fairbanks, Alaska &nbsp;·&nbsp; 64.86 N</div>
-  <span class="pill live" id="pillWx">LIVE WEATHER</span>
-  <span class="pill sim" id="pillSim">SIMULATED SENSORS</span>
+  <span class="pill live" id="pillWx" style="display:none">LIVE WEATHER</span>
+  <span class="pill sim" id="pillSim">CONNECTING TO LAB</span>
   <div class="clock" id="clock">--:--:-- AKDT</div>
 </header>
 <div class="mono" style="margin:14px 0 20px;font-size:12px;letter-spacing:.06em;color:#9DB0C6"><b style="color:#EBB540">N50 QUALIFIED</b> &nbsp;·&nbsp; testing vacuum insulated glass integrations in Alaska's proving ground</div>
 
-<section class="grid g5" id="wx">
-  <div class="panel tile"><h2>Outdoor air</h2><div class="v" id="wT">--<small>F</small></div><div class="s" id="wTs">Open-Meteo at the lab point, 1,204 ft</div><canvas class="spark" id="spT"></canvas></div>
+<section class="grid g4" id="wx">
+  <div class="panel tile"><h2>Outdoor air</h2><div class="v" id="wT">--<small>F</small></div><div class="s" id="wTs">lab outside probes</div><canvas class="spark" id="spT" style="display:none"></canvas></div>
+  <div class="panel tile"><h2>Inside air</h2><div class="v" id="wIn">--<small>F</small></div><div class="s" id="wIns">lab inside probes</div></div>
+  <div class="panel tile"><h2>Fairbanks Intl, 430 ft</h2><div class="v" id="wApt">--<small>F</small></div><div class="s" id="wApts">valley reference</div></div>
+  <div class="panel tile"><h2>NSGL resort, estimated</h2><div class="v" id="wN">--<small>F</small></div><div class="s" id="wNs">waiting for data</div></div>
+</section>
+<div hidden>
   <div class="panel tile"><h2>Humidity</h2><div class="v" id="wH">--<small>%</small></div><div class="s" id="wHs">outdoor relative</div><canvas class="spark" id="spH"></canvas></div>
   <div class="panel tile"><h2>Dew point</h2><div class="v" id="wD">--<small>F</small></div><div class="s">outdoor, computed</div><canvas class="spark" id="spD"></canvas></div>
   <div class="panel tile"><h2>Wind</h2><div class="v" id="wW">--<small>mph</small></div><div class="s" id="wWs">calm</div><canvas class="spark" id="spW"></canvas></div>
   <div class="panel tile"><h2>Cloud</h2><div class="v" id="wC">--<small>%</small></div><div class="s" id="wCs">cover</div><canvas class="spark" id="spC"></canvas></div>
-</section>
-
-<section class="grid g5" id="wx2">
   <div class="panel tile"><h2>Sky</h2><div class="v" id="wSky">--</div><div class="s" id="wSkys">visibility</div></div>
   <div class="panel tile"><h2>Precip, 24 h</h2><div class="v" id="wP">--<small>in</small></div><div class="s" id="wPs">snow on ground</div></div>
   <div class="panel tile"><h2>Sun on the glass</h2><div class="v" id="wSol">--<small>W/m²</small></div><div class="s">shortwave, horizontal</div><canvas class="spark" id="spS"></canvas></div>
   <div class="panel tile"><h2>Mixed layer</h2><div class="v" id="wBL">--<small>ft</small></div><div class="s">boundary layer depth, model</div><canvas class="spark" id="spB"></canvas></div>
-  <div class="panel tile"><h2>Fairbanks Intl, 430 ft</h2><div class="v" id="wApt">--<small>F</small></div><div class="s" id="wApts">valley reference</div></div>
-</section>
-
-<section class="grid g5" id="wx3">
-  <div class="panel tile" style="grid-column:span 2"><h2>NSGL resort, estimated</h2><div class="v" id="wN">--<small>F</small></div><div class="s" id="wNs">waiting for data</div></div>
-</section>
+</div>
 
 <section class="panel ctlbar">
-  <span class="kick">SIMULATION</span>
-  <label for="tin">ROOM</label><input type="range" id="tin" min="60" max="78" value="70" step="1"><span class="delta" id="tinv">70 F</span>
-  <label for="tout">OUTSIDE</label><input type="range" id="tout" min="-60" max="60" value="32" step="1"><span class="delta" id="toutv">live</span>
-  <button class="btn" id="liveBtn" type="button">USE LIVE</button>
+  <span class="kick" style="display:none">SIMULATION</span>
+  <span style="display:none"><label for="tin">ROOM</label><input type="range" id="tin" min="60" max="78" value="70" step="1"><span class="delta" id="tinv">70 F</span></span>
+  <span style="display:none"><label for="tout">OUTSIDE</label><input type="range" id="tout" min="-60" max="60" value="32" step="1"><span class="delta" id="toutv">live</span></span>
+  <button class="btn" id="liveBtn" type="button" style="display:none">USE LIVE</button>
   <span class="sep"></span><label>VIEW</label><button class="btn on" id="vModel" type="button">GLASS</button><button class="btn" id="vTherm" type="button">ALL SURFACES</button>
   <span class="delta" style="margin-left:auto">drag a model to orbit</span>
 </section>
@@ -138,25 +136,25 @@ input[type=range]{accent-color:var(--amber);width:120px}
 <section class="grid g2 wall">
   <div class="panel">
     <h2>V Wall <span class="tag">three lites · V1 to V3 left to right</span></h2>
-    <div class="stagewrap"><canvas id="stageA" class="stage"></canvas><div class="tscale" id="tscaleA" hidden><span class="mx">--</span><i></i><span class="mn">--</span><em>SIMULATED · ε 0.95</em></div>
+    <div class="stagewrap"><canvas id="stageA" class="stage"></canvas><div class="tscale" id="tscaleA" hidden><span class="mx">--</span><i></i><span class="mn">--</span><em>NO LIVE DATA</em></div>
       <div class="ov"><b>V WALL</b>V1 VIG in · V2 no second layer · V3 VIG out<br>three openings, 36 × 80 in assumed</div></div>
   </div>
   <div class="panel">
     <h2>V Wall probes <span class="tag">11 probes</span></h2>
-    <table class="probes" id="probesA"><thead><tr><th>Station</th><th>Lite</th><th style="text-align:right">Inboard</th><th style="text-align:right">Reading</th><th style="text-align:right">vs model</th></tr></thead><tbody></tbody></table>
+    <table class="probes" id="probesA"><thead><tr><th>Station</th><th>Lite</th><th style="text-align:right">Inboard</th><th style="text-align:right">Reading</th></tr></thead><tbody></tbody></table>
   </div>
 </section>
 
 <section class="grid g2 wall">
   <div class="panel">
     <h2>L Wall <span class="tag">six lites in one frame · L1 to L6</span></h2>
-    <div class="stagewrap"><canvas id="stageB" class="stage"></canvas><div class="tscale" id="tscaleB" hidden><span class="mx">--</span><i></i><span class="mn">--</span><em>SIMULATED · ε 0.95</em></div>
+    <div class="stagewrap"><canvas id="stageB" class="stage"></canvas><div class="tscale" id="tscaleB" hidden><span class="mx">--</span><i></i><span class="mn">--</span><em>NO LIVE DATA</em></div>
       <div class="ov"><b>L WALL</b>six lites in one frame, L1 to L6<br>lower 44 × 86 in, upper 44 × 48 in assumed<br>top L3 L2 L1 · bottom L6 L5 L4, from inside</div></div>
   </div>
   <div class="panel">
     <h2>L Wall probes <span class="tag">20 probes</span></h2>
-    <table class="probes" id="probesB"><thead><tr><th>Station</th><th>Lite</th><th style="text-align:right">Inboard</th><th style="text-align:right">Reading</th><th style="text-align:right">vs model</th></tr></thead><tbody></tbody></table>
-    <p class="delta" style="margin:10px 0 0">On each lite: centre of glass inside, edge of glass inside and centre of glass outside on each lite, plus one inside and one outside air thermocouple per wall. Rows marked live are real readings. The rest show the model until their channel is named or its probe reads sensibly.</p>
+    <table class="probes" id="probesB"><thead><tr><th>Station</th><th>Lite</th><th style="text-align:right">Inboard</th><th style="text-align:right">Reading</th></tr></thead><tbody></tbody></table>
+    <p class="delta" style="margin:10px 0 0">On each lite: centre of glass inside, edge of glass inside and centre of glass outside on each lite, plus one inside and one outside air thermocouple per wall. Every reading is live from the lab loggers. A dash means no reading yet.</p>
   </div>
 </section>
 
@@ -177,7 +175,7 @@ input[type=range]{accent-color:var(--amber);width:120px}
   </div>
 </section>
 
-<p class="foot"><b>About this page.</b> N50 Qualified: testing vacuum insulated glass integrations in Alaska's proving ground. Two test walls at the North 50 lab in Fairbanks: V Wall, three lites, and L Wall, six lites in one frame. Every lite carries a thermocouple at the centre of glass inside and out and one at the edge of glass inside, and each wall has an inside and an outside air thermocouple, 31 in all, read every 15 minutes. Rows marked live are real readings. Weather comes from Open-Meteo at the lab's own location and elevation, 1,204 ft, refreshed every 10 minutes, with Fairbanks Intl as the valley reference. The model line is the N50 THERM study, which assumes the N50 deep-bite frame. These test units do not have the deep bite, so their edges are expected to run colder than the model. The 3D walls are drawn to scale from the camera views.</p>
+<p class="foot"><b>About this page.</b> N50 Qualified: testing vacuum insulated glass integrations in Alaska's proving ground. Two test walls at the North 50 lab in Fairbanks: V Wall, three lites, and L Wall, six lites in one frame. Every lite carries a thermocouple at the centre of glass inside and out and one at the edge of glass inside, and each wall has an inside and an outside air thermocouple, 31 in all, read every 15 minutes. Every number on this page is measured: the lab probes, and the National Weather Service observation at Fairbanks Intl as the valley reference. The NSGL estimate is the lab's own outside air, since the lodge sits within about 23 ft of the lab's elevation. In the 3D view the glass is painted from the live probes; frames and walls are estimated, since nothing is mounted on them. The 3D walls are drawn to scale from the camera views.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -239,7 +237,7 @@ async function fetchLive(){
   try{ const r=await fetch("https://raw.githubusercontent.com/feldtdesign-ship-it/n50-lab-live/lab-data/latest.json?t="+Math.floor(Date.now()/60000),{cache:"no-store"}); if(!r.ok) throw 0; const j=await r.json();
     const age=(Date.now()-new Date(j.time_utc))/60000; LIVE = age<90 ? j : null;
     const el=$("pillSim"); if(LIVE){ el.textContent="LIVE SENSORS "+j.time_utc.slice(11,16)+" UTC"; el.classList.remove("sim"); el.classList.add("live"); }
-    else { el.textContent="SIMULATED SENSORS · last data "+Math.round(age/60)+" h old"; }
+    else { el.textContent="SENSORS OFFLINE · last data "+Math.round(age/60)+" h ago"; }
     if(LIVE&&LIVE.weather&&LIVE.weather.temp_f!=null){ $("wTs").textContent="weather station on the lab roof"; if(state.live){ state.tout=LIVE.weather.temp_f; $("tout").value=Math.round(state.tout); } }
     try{ let n=0; for(const i of [1,2,3]){ const p=((LIVE&&LIVE.probes)||{})["C"+i]; if(p&&p.value_f!=null){ n++; $("c"+i).innerHTML=`<div class="s">C${i}</div><div class="v">${p.value_f.toFixed(1)}<small>F</small></div><div class="s">live</div>`; } }
       $("cState").textContent=n?n+" of 3 live":"standby · 3 sensors linked"; }catch(e){}
@@ -300,15 +298,18 @@ function renderWx(){
   const bl=h.boundary_layer_height? h.boundary_layer_height[idx]:null; $("wBL").innerHTML=(bl==null?"--":Math.round(bl))+"<small>ft</small>"; if(h.boundary_layer_height) sl("spB",h.boundary_layer_height,"#9FD9E8");
   const a=state.apt&&state.apt.current, pf=state.pafa; const at = pf&&pf.t!=null ? pf.t : (a? a.temperature_2m : null);
   $("wApt").innerHTML=(at==null?"--":at.toFixed(1))+"<small>F</small>";
-  state.atF=at; renderNsgl();
+  state.atF=(pf&&pf.t!=null)?pf.t:null;
   $("wApts").textContent= pf ? (pf.text||"")+" · observed "+pf.time.slice(11,16)+" UTC · lab "+(c.temperature_2m-at>=0?"+":"")+(c.temperature_2m-at).toFixed(1)+" F" : (a? "model cell · lab "+(c.temperature_2m-at>=0?"+":"")+(c.temperature_2m-at).toFixed(1)+" F" : "valley reference");
+  renderNsgl();
 }
 const SLOPE_GAIN_F=11;  // historical Oct-Mar mean, slope stations 1,100-1,150 ft vs Fairbanks Intl (14-station study, 17 Aug)
 function renderNsgl(){ const P=(LIVE&&LIVE.probes)||{}, o=["A:air out 1","B:air out 1"].map(k=>P[k]&&P[k].value_f).filter(v=>v!=null), at=state.atF, f=v=>v.toFixed(1);
   let est=null, s="waiting for data";
   if(o.length){ const lab=o.reduce((a,b)=>a+b,0)/o.length; est=lab; s="lab outside probes "+f(lab)+" F, real"+(at!=null?" · Fairbanks Intl "+f(at)+" F · slope "+(lab-at>=0?"+":"")+f(lab-at)+" F":"")+" · lodge is 23 ft lower, no correction"; }
   else if(at!=null){ est=at+SLOPE_GAIN_F; s="Fairbanks Intl "+f(at)+" F + historical slope gain "+SLOPE_GAIN_F+" F · lab probes offline"; }
-  if(o.length){ $("wT").innerHTML=f(est)+"<small>F</small>"; $("wTs").textContent="lab outside probes, measured at the lab"; }
+  if(o.length){ $("wT").innerHTML=f(est)+"<small>F</small>"; $("wTs").textContent="measured at the lab, outside probes"; } else { $("wT").innerHTML="--<small>F</small>"; $("wTs").textContent="lab probes offline"; }
+  const ia=["A:air in 1","B:air in 1"].map(k=>P[k]&&P[k].value_f).filter(v=>v!=null); $("wIn").innerHTML=(ia.length?f(ia.reduce((a,b)=>a+b,0)/ia.length):"--")+"<small>F</small>"; $("wIns").textContent=ia.length?"measured at the lab, inside probes":"lab probes offline";
+  const pa=state.pafa; if(at==null){ $("wApt").innerHTML="--<small>F</small>"; $("wApts").textContent="no live observation"; } else { $("wApt").innerHTML=f(at)+"<small>F</small>"; $("wApts").textContent="National Weather Service"+(pa&&pa.time?" · observed "+pa.time.slice(11,16)+" UTC":"")+(o.length?" · lab "+((est-at)>=0?"+":"")+f(est-at)+" F":""); }
   $("wN").innerHTML=(est==null?"--":f(est))+"<small>F</small>"; $("wNs").textContent=s; }
 function nowIdx(h){ const now = (state.hourly===SAMPLE) ? new Date(SAMPLE.current.time+":00") : new Date(); let best=0,bd=1e18; h.time.forEach((t,i)=>{ const d=Math.abs(new Date(t+(t.length===16?":00":""))-now); if(d<bd){bd=d;best=i;} }); return best; }
 function spark(cv,arr,col){
@@ -326,8 +327,8 @@ function colorFor(t,tin,tout){ // cold -> ember
 }
 function renderTable(rs){ ["A","B"].forEach(b=>{
   const tb=$("probes"+b).querySelector("tbody"); tb.innerHTML="";
-  rs.filter(r=>r.bank===b).forEach(r=>{ const d=r.t-r.model; const tr=document.createElement("tr");
-    tr.innerHTML=`<td><span class="st" style="background:${r.face==="out"?"#9FD9E8":colorFor(r.t,state.tin,state.tout)}"></span>${r.id}<div class="delta">${r.note}</div></td><td>${r.lite}</td><td class="num">${r.kind==="air"?"air":r.face==="out"?"ext":r.mm+" mm"}</td><td class="num" style="color:var(--cream)">${r.t.toFixed(1)} F${r.live?" <span class=\"delta\" style=\"color:var(--ok)\">live</span>":""}</td><td class="num"><span class="delta">${d>=0?"+":""}${d.toFixed(2)}</span></td>`;
+  rs.filter(r=>r.bank===b).forEach(r=>{ const tr=document.createElement("tr");
+    tr.innerHTML=`<td><span class="st" style="background:${!r.live?"#5E7490":r.face==="out"?"#9FD9E8":colorFor(r.t,state.tin,state.tout)}"></span>${r.id}<div class="delta">${r.note}</div></td><td>${r.lite}</td><td class="num">${r.kind==="air"?"air":r.face==="out"?"ext":r.mm+" mm"}</td><td class="num" style="color:var(--cream)">${r.live?r.t.toFixed(1)+" F <span class=\"delta\" style=\"color:var(--ok)\">live</span>":"<span class=\"delta\">no reading</span>"}</td>`;
     tb.appendChild(tr); }); });
 }
 
@@ -382,8 +383,9 @@ function liveBank(b){ const P=LIVE&&LIVE.probes; if(!P) return null; const px=b=
 function thermalRange(){ const lo=Math.min(state.tout, surf(0,state.tin,state.tout))-3, hi=state.tin+2; return [lo,hi]; }
 function applyThermal(){
   ["A","B"].forEach(b=>{ const v=viewers[b]; if(!v||!v.scene) return;
-    const LB=liveBank(b); const [lo,hi]=LB?[LB.fr-2,LB.ci+10]:thermalRange(); const n=u=>(u-lo)/(hi-lo);
-    $("tscale"+b).querySelector("em").textContent=LB?"LIVE GLASS · FRAME + WALL ESTIMATED":"SIMULATED · ε 0.95";
+    const LB=liveBank(b); if(!LB){ $("tscale"+b).hidden=true; v.glass.forEach(m=>{ m.visible=false; }); v.scene.traverse(o=>{ if(o.isMesh&&v.orig.has(o)) o.material=v.orig.get(o); }); return; }
+    const [lo,hi]=LB?[LB.fr-2,LB.ci+10]:thermalRange(); const n=u=>(u-lo)/(hi-lo);
+    $("tscale"+b).querySelector("em").textContent=LB?"LIVE GLASS · FRAME + WALL ESTIMATED":"NO LIVE DATA";
     $("tscale"+b).hidden=false; $("tscale"+b).querySelector(".mx").textContent=hi.toFixed(1); $("tscale"+b).querySelector(".mn").textContent=lo.toFixed(1);
     v.scene.traverse(o=>{ if(!o.isMesh) return; const k=(o.name||(o.parent&&o.parent.name)||"").replace(/\.\d+$/,"");
       if(!state.thermal){ if(v.orig.has(o)) o.material=v.orig.get(o); return; }
@@ -403,7 +405,7 @@ function applyThermal(){
   });
 }
 function setView(th){ state.thermal=th; $("vModel").classList.toggle("on",!th); $("vTherm").classList.toggle("on",th); update(); }
-function paintProbes(rs){ rs.forEach(r=>{ const v=viewers[r.bank]; if(!v||!v.pm) return; const m=v.pm[r.mesh]; if(!m) return; if(r.face==="out"){ m.material.color.set(0x9fd9e8); m.material.emissive.set(0x0f3040); return; } const c=new THREE.Color(colorFor(r.t,state.tin,state.tout)); m.material.color.copy(c); m.material.emissive.copy(c).multiplyScalar(.3); }); }
+function paintProbes(rs){ rs.forEach(r=>{ const v=viewers[r.bank]; if(!v||!v.pm) return; const m=v.pm[r.mesh]; if(!m) return; if(!r.live){ m.material.color.set(0x5E7490); m.material.emissive.set(0x000000); return; } if(r.face==="out"){ m.material.color.set(0x9fd9e8); m.material.emissive.set(0x0f3040); return; } const c=new THREE.Color(colorFor(r.t,state.tin,state.tout)); m.material.color.copy(c); m.material.emissive.copy(c).multiplyScalar(.3); }); }
 // ---------- loop ----------
 function update(){ tick(); const rs=readings(state.tin,state.tout); renderTable(rs); paintProbes(rs); applyThermal(); }
 $("tin").addEventListener("input",e=>{ state.tin=+e.target.value; $("tinv").textContent=state.tin+" F"; update(); });
