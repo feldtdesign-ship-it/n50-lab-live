@@ -122,6 +122,10 @@ input[type=range]{accent-color:var(--amber);width:120px}
   <div class="panel tile"><h2>Fairbanks Intl, 430 ft</h2><div class="v" id="wApt">--<small>F</small></div><div class="s" id="wApts">valley reference</div></div>
 </section>
 
+<section class="grid g5" id="wx3">
+  <div class="panel tile" style="grid-column:span 2"><h2>NSGL resort, estimated</h2><div class="v" id="wN">--<small>F</small></div><div class="s" id="wNs">waiting for data</div></div>
+</section>
+
 <section class="panel ctlbar">
   <span class="kick">SIMULATION</span>
   <label for="tin">ROOM</label><input type="range" id="tin" min="60" max="78" value="70" step="1"><span class="delta" id="tinv">70 F</span>
@@ -239,7 +243,7 @@ async function fetchLive(){
     if(LIVE&&LIVE.weather&&LIVE.weather.temp_f!=null){ $("wTs").textContent="weather station on the lab roof"; if(state.live){ state.tout=LIVE.weather.temp_f; $("tout").value=Math.round(state.tout); } }
     try{ let n=0; for(const i of [1,2,3]){ const p=((LIVE&&LIVE.probes)||{})["C"+i]; if(p&&p.value_f!=null){ n++; $("c"+i).innerHTML=`<div class="s">C${i}</div><div class="v">${p.value_f.toFixed(1)}<small>F</small></div><div class="s">live</div>`; } }
       $("cState").textContent=n?n+" of 3 live":"standby · 3 sensors linked"; }catch(e){}
-    update();
+    update(); renderNsgl();
   }catch(e){ LIVE=null; }
 }
 function readings(tin,tout){
@@ -296,8 +300,15 @@ function renderWx(){
   const bl=h.boundary_layer_height? h.boundary_layer_height[idx]:null; $("wBL").innerHTML=(bl==null?"--":Math.round(bl))+"<small>ft</small>"; if(h.boundary_layer_height) sl("spB",h.boundary_layer_height,"#9FD9E8");
   const a=state.apt&&state.apt.current, pf=state.pafa; const at = pf&&pf.t!=null ? pf.t : (a? a.temperature_2m : null);
   $("wApt").innerHTML=(at==null?"--":at.toFixed(1))+"<small>F</small>";
+  state.atF=at; renderNsgl();
   $("wApts").textContent= pf ? (pf.text||"")+" · observed "+pf.time.slice(11,16)+" UTC · lab "+(c.temperature_2m-at>=0?"+":"")+(c.temperature_2m-at).toFixed(1)+" F" : (a? "model cell · lab "+(c.temperature_2m-at>=0?"+":"")+(c.temperature_2m-at).toFixed(1)+" F" : "valley reference");
 }
+const SLOPE_GAIN_F=11;  // historical Oct-Mar mean, slope stations 1,100-1,150 ft vs Fairbanks Intl (14-station study, 17 Aug)
+function renderNsgl(){ const P=(LIVE&&LIVE.probes)||{}, o=["A:air out 1","B:air out 1"].map(k=>P[k]&&P[k].value_f).filter(v=>v!=null), at=state.atF, f=v=>v.toFixed(1);
+  let est=null, s="waiting for data";
+  if(o.length){ const lab=o.reduce((a,b)=>a+b,0)/o.length; est=lab; s="lab outside probes "+f(lab)+" F, real"+(at!=null?" · Fairbanks Intl "+f(at)+" F · slope "+(lab-at>=0?"+":"")+f(lab-at)+" F":"")+" · lodge is 23 ft lower, no correction"; }
+  else if(at!=null){ est=at+SLOPE_GAIN_F; s="Fairbanks Intl "+f(at)+" F + historical slope gain "+SLOPE_GAIN_F+" F · lab probes offline"; }
+  $("wN").innerHTML=(est==null?"--":f(est))+"<small>F</small>"; $("wNs").textContent=s; }
 function nowIdx(h){ const now = (state.hourly===SAMPLE) ? new Date(SAMPLE.current.time+":00") : new Date(); let best=0,bd=1e18; h.time.forEach((t,i)=>{ const d=Math.abs(new Date(t+(t.length===16?":00":""))-now); if(d<bd){bd=d;best=i;} }); return best; }
 function spark(cv,arr,col){
   const dpr=devicePixelRatio||1, W=cv.clientWidth, H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; const g=cv.getContext("2d"); g.scale(dpr,dpr);
