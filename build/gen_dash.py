@@ -37,10 +37,10 @@ header img{height:26px;width:auto}
 @media (prefers-reduced-motion:reduce){.pill.live::before{animation:none}}
 .grid{display:grid;gap:14px;margin-top:14px}
 .g5{grid-template-columns:repeat(5,minmax(0,1fr))}
-.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .g2{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
 .g2b{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-@media (max-width:900px){.g4,.g5{grid-template-columns:repeat(2,minmax(0,1fr))}.g2,.g2b{grid-template-columns:1fr}}
+@media (max-width:900px){.g3,.g5{grid-template-columns:repeat(2,minmax(0,1fr))}.g2,.g2b{grid-template-columns:1fr}}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px 16px;min-width:0}
 .panel h2{margin:0 0 10px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:600;display:flex;align-items:center;gap:10px}
 .panel h2 .tag{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--dim);text-transform:none}
@@ -107,13 +107,13 @@ input[type=range]{accent-color:var(--amber);width:120px}
 </header>
 <div class="mono" style="margin:14px 0 20px;font-size:12px;letter-spacing:.06em;color:#9DB0C6"><b style="color:#EBB540">N50 QUALIFIED</b> &nbsp;·&nbsp; testing vacuum insulated glass integrations in Alaska's proving ground</div>
 
-<section class="grid g4" id="wx">
+<section class="grid g3" id="wx">
   <div class="panel tile"><h2>Outdoor air</h2><div class="v" id="wT">--<small>F</small></div><div class="s" id="wTs">lab outside probes</div><canvas class="spark" id="spT" style="display:none"></canvas></div>
   <div class="panel tile"><h2>Inside air</h2><div class="v" id="wIn">--<small>F</small></div><div class="s" id="wIns">lab inside probes</div></div>
   <div class="panel tile"><h2>Fairbanks Intl, 430 ft</h2><div class="v" id="wApt">--<small>F</small></div><div class="s" id="wApts">valley reference</div></div>
-  <div class="panel tile"><h2>NSGL resort, estimated</h2><div class="v" id="wN">--<small>F</small></div><div class="s" id="wNs">waiting for data</div></div>
 </section>
 <div hidden>
+  <div class="panel tile"><h2>NSGL resort, estimated</h2><div class="v" id="wN">--<small>F</small></div><div class="s" id="wNs">waiting for data</div></div>
   <div class="panel tile"><h2>Humidity</h2><div class="v" id="wH">--<small>%</small></div><div class="s" id="wHs">outdoor relative</div><canvas class="spark" id="spH"></canvas></div>
   <div class="panel tile"><h2>Dew point</h2><div class="v" id="wD">--<small>F</small></div><div class="s">outdoor, computed</div><canvas class="spark" id="spD"></canvas></div>
   <div class="panel tile"><h2>Wind</h2><div class="v" id="wW">--<small>mph</small></div><div class="s" id="wWs">calm</div><canvas class="spark" id="spW"></canvas></div>
