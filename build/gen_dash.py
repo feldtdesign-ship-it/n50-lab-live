@@ -135,24 +135,24 @@ input[type=range]{accent-color:var(--amber);width:120px}
 
 <section class="grid g2 wall">
   <div class="panel">
-    <h2>V Wall <span class="tag">three lites · V1 to V3 left to right</span></h2>
+    <h2>V Series <span class="tag">three lites · V1 to V3 left to right</span></h2>
     <div class="stagewrap"><canvas id="stageA" class="stage"></canvas><div class="tscale" id="tscaleA" hidden><span class="mx">--</span><i></i><span class="mn">--</span><em>NO LIVE DATA</em></div>
-      <div class="ov"><b>V WALL</b>V1 VIG in · V2 no second layer · V3 VIG out<br>three openings, 36 × 80 in assumed</div></div>
+      <div class="ov">V1 VIG in · V2 no second layer · V3 VIG out<br>three openings, 36 × 80 in assumed</div></div>
   </div>
   <div class="panel">
-    <h2>V Wall probes <span class="tag">11 probes</span></h2>
+    <h2>V Series probes <span class="tag">11 probes</span></h2>
     <table class="probes" id="probesA"><thead><tr><th>Station</th><th>Lite</th><th style="text-align:right">Inboard</th><th style="text-align:right">Reading</th></tr></thead><tbody></tbody></table>
   </div>
 </section>
 
 <section class="grid g2 wall">
   <div class="panel">
-    <h2>L Wall <span class="tag">six lites in one frame · L1 to L6</span></h2>
+    <h2>L Series <span class="tag">six lites in one frame · L1 to L6</span></h2>
     <div class="stagewrap"><canvas id="stageB" class="stage"></canvas><div class="tscale" id="tscaleB" hidden><span class="mx">--</span><i></i><span class="mn">--</span><em>NO LIVE DATA</em></div>
-      <div class="ov"><b>L WALL</b>six lites in one frame, L1 to L6<br>lower 44 × 86 in, upper 44 × 48 in assumed<br>top L3 L2 L1 · bottom L6 L5 L4, from inside</div></div>
+      <div class="ov">six lites in one frame, L1 to L6<br>lower 44 × 86 in, upper 44 × 48 in assumed<br>top L3 L2 L1 · bottom L6 L5 L4, from inside</div></div>
   </div>
   <div class="panel">
-    <h2>L Wall probes <span class="tag">20 probes</span></h2>
+    <h2>L Series probes <span class="tag">20 probes</span></h2>
     <table class="probes" id="probesB"><thead><tr><th>Station</th><th>Lite</th><th style="text-align:right">Inboard</th><th style="text-align:right">Reading</th></tr></thead><tbody></tbody></table>
     <p class="delta" style="margin:10px 0 0">On each lite: centre of glass inside, edge of glass inside and centre of glass outside on each lite, plus one inside and one outside air thermocouple per wall. Every reading is live from the lab loggers. A dash means no reading yet.</p>
   </div>
@@ -167,15 +167,15 @@ input[type=range]{accent-color:var(--amber);width:120px}
 
 <section class="grid g2b">
   <div class="panel" style="grid-column:1/-1">
-    <h2>Cameras <span class="tag">V Wall and L Wall</span></h2>
+    <h2>Cameras <span class="tag">V Series and L Series</span></h2>
     <div class="cams">
-      <div class="cam slot"><span class="lab">V WALL</span><span class="delta">live stream coming</span></div>
-      <div class="cam slot"><span class="lab">L WALL</span><span class="delta">live stream coming</span></div>
+      <div class="cam slot"><span class="lab">V SERIES</span><span class="delta">live stream coming</span></div>
+      <div class="cam slot"><span class="lab">L SERIES</span><span class="delta">live stream coming</span></div>
     </div>
   </div>
 </section>
 
-<p class="foot"><b>About this page.</b> N50 Qualified: testing vacuum insulated glass integrations in Alaska's proving ground. Two test walls at the North 50 lab in Fairbanks: V Wall, three lites, and L Wall, six lites in one frame. Every lite carries a thermocouple at the centre of glass inside and out and one at the edge of glass inside, and each wall has an inside and an outside air thermocouple, 31 in all, read every 15 minutes. Every number on this page is measured: the lab probes, and the National Weather Service observation at Fairbanks Intl as the valley reference. The NSGL estimate is the lab's own outside air, since the lodge sits within about 23 ft of the lab's elevation. In the 3D view the glass is painted from the live probes; frames and walls are estimated, since nothing is mounted on them. The 3D walls are drawn to scale from the camera views.</p>
+<p class="foot"><b>About this page.</b> N50 Qualified: testing vacuum insulated glass integrations in Alaska's proving ground. Two test walls at the North 50 lab in Fairbanks: V Series, three lites, and L Series, six lites in one frame. Every lite carries a thermocouple at the centre of glass inside and out and one at the edge of glass inside, and each wall has an inside and an outside air thermocouple, 31 in all, read every 15 minutes. Every number on this page is measured: the lab probes, and the National Weather Service observation at Fairbanks Intl as the valley reference. The NSGL estimate is the lab's own outside air, since the lodge sits within about 23 ft of the lab's elevation. In the 3D view the glass is painted from the live probes; frames and walls are estimated, since nothing is mounted on them. The 3D walls are drawn to scale from the camera views.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
