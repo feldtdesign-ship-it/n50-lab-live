@@ -308,6 +308,7 @@ function renderNsgl(){ const P=(LIVE&&LIVE.probes)||{}, o=["A:air out 1","B:air 
   let est=null, s="waiting for data";
   if(o.length){ const lab=o.reduce((a,b)=>a+b,0)/o.length; est=lab; s="lab outside probes "+f(lab)+" F, real"+(at!=null?" · Fairbanks Intl "+f(at)+" F · slope "+(lab-at>=0?"+":"")+f(lab-at)+" F":"")+" · lodge is 23 ft lower, no correction"; }
   else if(at!=null){ est=at+SLOPE_GAIN_F; s="Fairbanks Intl "+f(at)+" F + historical slope gain "+SLOPE_GAIN_F+" F · lab probes offline"; }
+  if(o.length){ $("wT").innerHTML=f(est)+"<small>F</small>"; $("wTs").textContent="lab outside probes, measured at the lab"; }
   $("wN").innerHTML=(est==null?"--":f(est))+"<small>F</small>"; $("wNs").textContent=s; }
 function nowIdx(h){ const now = (state.hourly===SAMPLE) ? new Date(SAMPLE.current.time+":00") : new Date(); let best=0,bd=1e18; h.time.forEach((t,i)=>{ const d=Math.abs(new Date(t+(t.length===16?":00":""))-now); if(d<bd){bd=d;best=i;} }); return best; }
 function spark(cv,arr,col){
