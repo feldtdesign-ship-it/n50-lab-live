@@ -370,7 +370,7 @@ function liveBank(b){ const P=LIVE&&LIVE.probes; if(!P) return null; const px=b=
 function thermalRange(){ const lo=Math.min(state.tout, surf(0,state.tin,state.tout))-3, hi=state.tin+2; return [lo,hi]; }
 function applyThermal(){
   ["A","B"].forEach(b=>{ const v=viewers[b]; if(!v||!v.scene) return;
-    const LB=liveBank(b); const [lo,hi]=LB?[40,90]:thermalRange(); const n=u=>(u-lo)/(hi-lo);
+    const LB=liveBank(b); const [lo,hi]=LB?[LB.fr-2,LB.ci+10]:thermalRange(); const n=u=>(u-lo)/(hi-lo);
     $("tscale"+b).querySelector("em").textContent=LB?"LIVE GLASS · FRAME + WALL ESTIMATED":"SIMULATED · ε 0.95";
     $("tscale"+b).hidden=false; $("tscale"+b).querySelector(".mx").textContent=hi.toFixed(1); $("tscale"+b).querySelector(".mn").textContent=lo.toFixed(1);
     v.scene.traverse(o=>{ if(!o.isMesh) return; const k=(o.name||(o.parent&&o.parent.name)||"").replace(/\.\d+$/,"");
