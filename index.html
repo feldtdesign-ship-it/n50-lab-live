@@ -352,18 +352,23 @@ function initThree(){ initViewer("A"); initViewer("B"); }
 // ironbow palette, t normalised 0..1
 const IRON=[[0,0,0],[26,2,56],[138,10,110],[232,50,28],[255,154,31],[255,229,107],[255,255,255]];
 function iron(u){ u=Math.max(0,Math.min(1,u)); const k=u*(IRON.length-1), i=Math.floor(k), f=k-i, a=IRON[i], b=IRON[Math.min(i+1,IRON.length-1)]; return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f, a[2]+(b[2]-a[2])*f].map(v=>v/255); }
+const FRAME_BELOW_EDGE_F=4;  // ASSUMED: no frame probe yet; frames drawn this far below the coldest live glass edge
+function liveBank(b){ const P=LIVE&&LIVE.probes; if(!P) return null; const px=b==="A"?"V":"L", g=s=>Object.entries(P).filter(([k,p])=>k[0]===px&&k.endsWith(" "+s)&&p&&p.value_f!=null).map(([,p])=>p.value_f);
+  const ci=g("ci"), ei=g("ei"), ce=g("ce"), ai=P[b+":air in 1"], ao=P[b+":air out 1"]; if(!ci.length||!ei.length||!ce.length||!ai||ai.value_f==null||!ao||ao.value_f==null) return null;
+  const av=a=>a.reduce((x,y)=>x+y,0)/a.length; return {ci:av(ci), ei:av(ei), ce:av(ce), fr:Math.min(...ei)-FRAME_BELOW_EDGE_F, ain:ai.value_f, aout:ao.value_f}; }
 function thermalRange(){ const lo=Math.min(state.tout, surf(0,state.tin,state.tout))-3, hi=state.tin+2; return [lo,hi]; }
 function applyThermal(){
-  const [lo,hi]=thermalRange(); const n=v=>(v-lo)/(hi-lo);
   ["A","B"].forEach(b=>{ const v=viewers[b]; if(!v||!v.scene) return;
+    const LB=liveBank(b); const [lo,hi]=LB?[LB.fr-2,LB.ci+5]:thermalRange(); const n=u=>(u-lo)/(hi-lo);
+    $("tscale"+b).querySelector("em").textContent=LB?"LIVE GLASS · FRAME + WALL ESTIMATED":"SIMULATED · ε 0.95";
     $("tscale"+b).hidden=false; $("tscale"+b).querySelector(".mx").textContent=hi.toFixed(1); $("tscale"+b).querySelector(".mn").textContent=lo.toFixed(1);
     v.scene.traverse(o=>{ if(!o.isMesh) return; const k=(o.name||(o.parent&&o.parent.name)||"").replace(/\.\d+$/,"");
       if(!state.thermal){ if(v.orig.has(o)) o.material=v.orig.get(o); return; }
       if(/_P_/.test(k)) return;
       // walls and frames: grade from the outdoor face to the room face through the thickness, so reveals show the gradient
       const isFrame=/_(mull|head|sill|transom_bar|jamb)/.test(k);
-      const tIn = isFrame ? surf(6,state.tin,state.tout)-1.5 : state.tin-1.2;
-      const tOut = state.tout + (isFrame?0.06:0.03)*(state.tin-state.tout);
+      const tIn = LB ? (isFrame ? LB.fr : LB.ain-8) : (isFrame ? surf(6,state.tin,state.tout)-1.5 : state.tin-1.2);
+      const tOut = LB ? LB.aout + (isFrame?0.06:0.03)*(LB.ain-LB.aout) : state.tout + (isFrame?0.06:0.03)*(state.tin-state.tout);
       const g=o.geometry; if(!g.attributes.color){ g.setAttribute("color", new THREE.BufferAttribute(new Float32Array(g.attributes.position.count*3),3)); }
       g.computeBoundingBox(); const bb=g.boundingBox; const pos=g.attributes.position, col=g.attributes.color;
       // local z runs outdoor (min) to room (max) for every box in this model
@@ -371,7 +376,7 @@ function applyThermal(){
       col.needsUpdate=true;
       if(!o.userData.tm) o.userData.tm=new THREE.MeshBasicMaterial({vertexColors:true}); o.material=o.userData.tm; });
     v.glass.forEach(m=>{ m.visible=true; const pos=m.geometry.attributes.position, col=m.geometry.attributes.color, w=m.userData.w, h=m.userData.h;
-      for(let i=0;i<pos.count;i++){ const x=pos.getX(i), y=pos.getY(i); const mm=Math.max(0,Math.min(w/2-Math.abs(x), h/2-Math.abs(y))*1000); const t=m.userData.face==="out" ? extSurf(state.tin,state.tout,mm) : surf(mm,state.tin,state.tout); const c=iron(n(t)); col.setXYZ(i,c[0],c[1],c[2]); } col.needsUpdate=true; });
+      for(let i=0;i<pos.count;i++){ const x=pos.getX(i), y=pos.getY(i); const mm=Math.max(0,Math.min(w/2-Math.abs(x), h/2-Math.abs(y))*1000); const t=LB ? (m.userData.face==="out" ? LB.ce+(extSurf(70,0,mm)-extSurf(70,0,150))*(LB.ain-LB.aout)/70 : LB.ei+(surf(mm,70,0)-surf(6,70,0))/(surf(150,70,0)-surf(6,70,0))*(LB.ci-LB.ei)) : (m.userData.face==="out" ? extSurf(state.tin,state.tout,mm) : surf(mm,state.tin,state.tout)); const c=iron(n(t)); col.setXYZ(i,c[0],c[1],c[2]); } col.needsUpdate=true; });
   });
 }
 function setView(th){ state.thermal=th; $("vModel").classList.toggle("on",!th); $("vTherm").classList.toggle("on",th); update(); }
