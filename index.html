@@ -65,6 +65,7 @@ pre.tree .db{color:var(--amber)}
 pre.tree .cm{color:var(--dim)}
 .cams{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (max-width:760px){.cams{grid-template-columns:1fr!important}}
+.sb{font-family:var(--mono);font-size:16px;letter-spacing:.14em;color:var(--amber);padding:10px 0}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .cam{position:relative;border-radius:3px;overflow:hidden;background:#000;aspect-ratio:16/9;max-width:100%}
 .cam img{width:100%;height:100%;object-fit:cover;display:block;opacity:.92}
@@ -146,8 +147,8 @@ input[type=range]{accent-color:var(--amber);width:120px}
 
 <section class="grid g2b" id="comfort">
   <div class="panel" style="grid-column:1/-1">
-    <h2>C Series <span class="tag">comfort sensors</span> <span class="tag" id="cState">installed · waiting for first reading</span></h2>
-    <div class="cgrid" id="cGrid"><div class="cam slot" style="aspect-ratio:auto;padding:22px 12px"><span class="lab">C SERIES</span><span class="delta">Hooked up and ready. Readings appear here as soon as they start recording.</span></div></div>
+    <h2>C Series <span class="tag">comfort sensors</span> <span class="tag" id="cState">standby · 3 sensors linked</span></h2>
+    <div class="cgrid" id="cGrid"><div class="tile" id="c1"><div class="s">C1</div><div class="v sb">STANDBY</div><div class="s">linked · awaiting first sample</div></div><div class="tile" id="c2"><div class="s">C2</div><div class="v sb">STANDBY</div><div class="s">linked · awaiting first sample</div></div><div class="tile" id="c3"><div class="s">C3</div><div class="v sb">STANDBY</div><div class="s">linked · awaiting first sample</div></div></div>
   </div>
 </section>
 
@@ -225,8 +226,8 @@ async function fetchLive(){
     const el=$("pillSim"); if(LIVE){ el.textContent="LIVE SENSORS "+j.time_utc.slice(11,16)+" UTC"; el.classList.remove("sim"); el.classList.add("live"); }
     else { el.textContent="SIMULATED SENSORS · last data "+Math.round(age/60)+" h old"; }
     if(LIVE&&LIVE.weather&&LIVE.weather.temp_f!=null){ $("wTs").textContent="weather station on the lab roof"; if(state.live){ state.tout=LIVE.weather.temp_f; $("tout").value=Math.round(state.tout); } }
-    try{ const cs=Object.entries((LIVE&&LIVE.probes)||{}).filter(([k,p])=>/^C\d/.test(k)&&p&&p.value_f!=null);
-      if(cs.length){ $("cState").textContent=cs.length+" live"; $("cGrid").innerHTML=cs.sort().map(([k,p])=>`<div class="tile"><div class="s">${k.replace(/^C\d/,"")}</div><div class="v">${p.value_f.toFixed(1)}<small>F</small></div></div>`).join(""); } }catch(e){}
+    try{ let n=0; for(const i of [1,2,3]){ const p=((LIVE&&LIVE.probes)||{})["C"+i]; if(p&&p.value_f!=null){ n++; $("c"+i).innerHTML=`<div class="s">C${i}</div><div class="v">${p.value_f.toFixed(1)}<small>F</small></div><div class="s">live</div>`; } }
+      $("cState").textContent=n?n+" of 3 live":"standby · 3 sensors linked"; }catch(e){}
     update();
   }catch(e){ LIVE=null; }
 }
